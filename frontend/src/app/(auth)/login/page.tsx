@@ -72,7 +72,9 @@ function LoginForm() {
         return;
       }
 
-      // 3. Fetch user role to redirect correctly
+      // 3. Wait a tick for cookie to be set, then fetch role
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const userRes = await fetch("http://localhost:4000/api/user/me", {
         credentials: "include",
       });
@@ -83,21 +85,22 @@ function LoginForm() {
         const user = await userRes.json();
         toast.success(`Welcome back, ${user.name || "User"}!`);
         if (user.role === "ADMIN") {
-          router.push("/admin");
+          window.location.href = "/admin";
         } else if (user.role === "SELLER") {
-          router.push("/seller");
+          window.location.href = "/seller";
         } else {
-          router.push(redirectUrl);
+          window.location.href = redirectUrl;
         }
       } else {
         toast.success("Welcome back!");
-        router.push(redirectUrl);
+        window.location.href = redirectUrl;
       }
     } catch (error) {
       console.error(error);
       toast.error("Failed to connect to the server");
     }
   };
+
 
   return (
     <motion.div
@@ -173,7 +176,7 @@ function LoginForm() {
 
       <div className="mt-8 text-center text-[13px] font-medium text-[rgba(10,10,10,0.6)]">
         Don't have an account?{" "}
-        <Link href="/register" className="font-bold text-[#0a0a0a] hover:underline">
+        <Link href={`/register${redirectUrl !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`} className="font-bold text-[#0a0a0a] hover:underline">
           Create Account
         </Link>
       </div>

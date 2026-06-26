@@ -1,13 +1,38 @@
 import { Navbar } from "@/components/ui/navbar";
 import { CheckoutSummary } from "@/components/sections/checkout-summary";
 import { CheckoutForm } from "@/components/sections/checkout-form";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Secure Checkout | GradMart",
   description: "Complete your purchase securely.",
 };
 
-export default function CheckoutPage() {
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: { projectId?: string };
+}) {
+  const projectId = searchParams.projectId;
+
+  if (!projectId) {
+    redirect("/projects");
+  }
+
+  let project = null;
+  try {
+    const res = await fetch(`http://localhost:4000/api/projects/${projectId}`, { cache: 'no-store' });
+    if (res.ok) {
+      project = await res.json();
+    }
+  } catch (error) {
+    console.error("Error fetching project for checkout:", error);
+  }
+
+  if (!project) {
+    redirect("/projects");
+  }
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <div className="pt-6">
@@ -18,12 +43,12 @@ export default function CheckoutPage() {
         
         {/* Left Column: Order Summary */}
         <div className="w-full lg:w-[45%] h-full min-h-[600px]">
-          <CheckoutSummary />
+          <CheckoutSummary project={project} />
         </div>
 
         {/* Right Column: Checkout Form */}
         <div className="w-full lg:w-[55%] h-full">
-          <CheckoutForm />
+          <CheckoutForm project={project} />
         </div>
 
       </div>

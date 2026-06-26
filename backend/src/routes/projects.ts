@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
+      where: { sales: 0 },
       orderBy: { createdAt: 'desc' },
     });
     res.json(projects);
@@ -26,6 +27,7 @@ router.get('/search', async (req, res) => {
 
     const projects = await prisma.project.findMany({
       where: {
+        sales: 0,
         OR: [
           { title: { contains: q, mode: 'insensitive' } },
           { category: { contains: q, mode: 'insensitive' } },
@@ -40,12 +42,17 @@ router.get('/search', async (req, res) => {
   }
 });
 
-// GET /api/projects/:id - Get specific project
-router.get('/:id', async (req, res) => {
+// GET /api/projects/:idOrSlug - Get specific project
+router.get('/:idOrSlug', async (req, res) => {
   try {
-    const { id } = req.params;
-    const project = await prisma.project.findUnique({
-      where: { id },
+    const { idOrSlug } = req.params;
+    const project = await prisma.project.findFirst({
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug },
+        ],
+      },
     });
 
     if (!project) {
@@ -63,6 +70,7 @@ router.get('/:id', async (req, res) => {
 router.get('/categories/all', async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
+      where: { sales: 0 },
       select: { category: true },
       distinct: ['category'],
     });

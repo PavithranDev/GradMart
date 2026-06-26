@@ -35,6 +35,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
     // Uploads (mock strings for UI)
     thumbnail: initialData?.thumbnail || "",
     zipUrl: initialData?.zipUrl || "",
+    driveUrl: initialData?.driveUrl || "",
     pdfUrl: initialData?.pdfUrl || "",
     pptUrl: initialData?.pptUrl || "",
     sqlUrl: initialData?.sqlUrl || "",
@@ -86,7 +87,9 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         metaDescription: formData.metaDescription,
         keywords: formData.keywords.split(',').map(t => t.trim()).filter(Boolean),
         status: "Published",
-        imageColor: "#" + Math.floor(Math.random()*16777215).toString(16)
+        imageColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+        driveUrl: formData.driveUrl || null,
+        zipUrl: formData.zipUrl || null,
       };
 
       const url = initialData 
@@ -204,12 +207,38 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                 {/* STEP 2: UPLOADS */}
                 {step === 2 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                    <p className="text-[14px] text-black/60 mb-2">Note: For this demo, files are not actually uploaded to a cloud provider. This represents the UI flow.</p>
+                    <p className="text-[14px] text-black/60 mb-2">Upload your project files or provide external links.</p>
+                    
+                    <div className="mb-6 p-4 bg-[#f5f4ef] rounded-2xl border border-black/5">
+                      <h4 className="text-[13px] font-bold text-[#0a0a0a] mb-3">Source Code Delivery Method</h4>
+                      <div className="flex gap-4 mb-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="radio" name="sourceCodeType" checked={!formData.driveUrl && formData.zipUrl !== undefined} onChange={() => setFormData({...formData, driveUrl: "", zipUrl: "dummy.zip"})} className="accent-[#0a0a0a]" />
+                          <span className="text-[14px] font-medium text-[#0a0a0a]">Upload ZIP File</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input type="radio" name="sourceCodeType" checked={!!formData.driveUrl} onChange={() => setFormData({...formData, driveUrl: "https://drive.google.com/...", zipUrl: ""})} className="accent-[#0a0a0a]" />
+                          <span className="text-[14px] font-medium text-[#0a0a0a]">Google Drive Link</span>
+                        </label>
+                      </div>
+
+                      {!!formData.driveUrl ? (
+                        <div>
+                          <input type="url" placeholder="https://drive.google.com/..." value={formData.driveUrl} onChange={e => setFormData({...formData, driveUrl: e.target.value})} className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-[14px] text-[#0a0a0a] placeholder:text-[rgba(10,10,10,0.4)] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]" />
+                        </div>
+                      ) : (
+                        <div className="border-2 border-dashed border-black/10 bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer group h-24">
+                          <UploadCloud className="w-6 h-6 text-black/40 group-hover:text-blue-500 mb-2" />
+                          <span className="text-[12px] font-bold text-[#0a0a0a] mb-1">Source Code (ZIP)</span>
+                          <input type="file" accept=".zip" className="hidden" />
+                        </div>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {[
                         { label: "Thumbnail Image", type: "image/*" },
                         { label: "Gallery Images", type: "image/*", multiple: true },
-                        { label: "Source Code (ZIP)", type: ".zip" },
                         { label: "Project Report (PDF/DOCX)", type: ".pdf,.docx" },
                         { label: "Presentation (PPT)", type: ".ppt,.pptx" },
                         { label: "Database (SQL)", type: ".sql" },

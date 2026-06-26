@@ -25,6 +25,7 @@ model User {
   projects      Project[] @relation("SellerProjects")
   sentMessages  Message[]
   withdrawals   Withdrawal[]
+  customProjects CustomProjectRequest[]
   
   // Conversations where the user is a participant
   conversationsAsSeller Conversation[] @relation("SellerConversations")
@@ -84,6 +85,7 @@ model Project {
   
   // File Uploads
   zipUrl          String?
+  driveUrl        String?
   pdfUrl          String?
   pptUrl          String?
   sqlUrl          String?
@@ -159,6 +161,22 @@ model Withdrawal {
   status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
   
   seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CustomProjectRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String   @db.Text
+  budget      String?
+  quotedBudget String?
+  deadline    String?
+  status      String   @default("SUBMITTED") // SUBMITTED, REVIEW, QUOTED, ASSIGNED, DEVELOPMENT, TESTING, READY, DELIVERED
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

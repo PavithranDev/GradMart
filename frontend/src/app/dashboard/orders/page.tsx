@@ -1,45 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
-
-const ORDERS_DATA = [
-  {
-    id: "#ORD-8924",
-    project: "AI Smart Attendance System",
-    amount: "₹499",
-    status: "paid",
-    date: "Oct 12, 2023",
-    refundStatus: "none"
-  },
-  {
-    id: "#ORD-8923",
-    project: "MERN E-commerce Platform",
-    amount: "₹799",
-    status: "paid",
-    date: "Oct 10, 2023",
-    refundStatus: "none"
-  },
-  {
-    id: "#ORD-8891",
-    project: "Hospital Management Java",
-    amount: "₹499",
-    status: "refunded",
-    date: "Sep 28, 2023",
-    refundStatus: "completed"
-  },
-  {
-    id: "#ORD-8850",
-    project: "IoT Smart Farming",
-    amount: "₹699",
-    status: "pending",
-    date: "Sep 15, 2023",
-    refundStatus: "none"
-  }
-];
 
 export default function OrderHistoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/user/dashboard", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error && data.purchases) {
+          setPurchases(data.purchases);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch orders", err);
+        setLoading(false);
+      });
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -53,6 +37,8 @@ export default function OrderHistoryPage() {
         return null;
     }
   };
+
+  const filteredPurchases = purchases.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()) || p.id.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="flex-1 lg:pl-10 pb-20 w-full mt-8 lg:mt-0">
@@ -92,51 +78,55 @@ export default function OrderHistoryPage() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-black/5 bg-[#f5f4ef]/50">
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Order ID</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Project</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black/5">
-              {ORDERS_DATA.map((order) => (
-                <tr key={order.id} className="hover:bg-[#f5f4ef]/30 transition-colors">
-                  <td className="px-6 py-5">
-                    <span className="text-[14px] font-bold text-[#0a0a0a]">{order.id}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-[14px] font-bold text-[#0a0a0a]">{order.project}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-[14px] font-bold text-[#0a0a0a]">{order.amount}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    {getStatusBadge(order.status)}
-                  </td>
-                  <td className="px-6 py-5">
-                    <span className="text-[14px] font-medium text-[rgba(10,10,10,0.6)]">{order.date}</span>
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center justify-end gap-3">
-                      {order.status === 'paid' && (
+          {loading ? (
+             <div className="p-12 text-center text-black/50">Loading orders...</div>
+          ) : filteredPurchases.length === 0 ? (
+             <div className="p-12 text-center text-black/50">No orders found.</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-black/5 bg-[#f5f4ef]/50">
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Order ID</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/5">
+                {filteredPurchases.map((order) => (
+                  <tr key={order.id} className="hover:bg-[#f5f4ef]/30 transition-colors">
+                    <td className="px-6 py-5">
+                      <span className="text-[14px] font-bold text-[#0a0a0a]">#{order.id.substring(0,8).toUpperCase()}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-[14px] font-bold text-[#0a0a0a]">{order.title}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-[14px] font-bold text-[#0a0a0a]">Paid</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      {getStatusBadge("paid")}
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-[14px] font-medium text-[rgba(10,10,10,0.6)]">{order.date}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-3">
                         <button className="text-[13px] font-bold text-[#0a0a0a] hover:text-[#6c3bff] transition-colors flex items-center gap-1.5 bg-black/5 px-3 py-1.5 rounded-lg hover:bg-[#6c3bff]/10">
                           <Download className="w-4 h-4" /> Files
                         </button>
-                      )}
-                      <button className="text-[13px] font-bold text-[rgba(10,10,10,0.6)] hover:text-[#0a0a0a] transition-colors flex items-center gap-1.5 bg-black/5 px-3 py-1.5 rounded-lg hover:bg-black/10">
-                        <FileText className="w-4 h-4" /> Invoice
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        <button className="text-[13px] font-bold text-[rgba(10,10,10,0.6)] hover:text-[#0a0a0a] transition-colors flex items-center gap-1.5 bg-black/5 px-3 py-1.5 rounded-lg hover:bg-black/10">
+                          <FileText className="w-4 h-4" /> Invoice
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination */}

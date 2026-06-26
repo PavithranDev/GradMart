@@ -13,6 +13,8 @@ import projectsRouter from './routes/projects';
 import adminRouter from './routes/admin';
 import sellerRouter from './routes/seller';
 import messagesRouter from './routes/messages';
+import purchasesRouter from './routes/purchases';
+import customProjectsRouter from './routes/custom-projects';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -63,10 +65,25 @@ export const authConfig = {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
         };
       }
     })
   ],
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (token && session.user) {
+        (session.user as any).role = token.role;
+      }
+      return session;
+    }
+  },
   session: { 
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -170,6 +187,8 @@ app.get('/api/user/dashboard', async (req, res) => {
       category: p.project.category,
       date: p.purchasedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       image: p.project.imageColor,
+      driveUrl: p.project.driveUrl,
+      project: p.project // keep the whole project object to access zipUrl, etc if needed on frontend
     }));
 
     res.json({
@@ -190,6 +209,8 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/seller', sellerRouter);
 app.use('/api/messages', messagesRouter);
+app.use('/api/purchases', purchasesRouter);
+app.use('/api/custom-projects', customProjectsRouter);
 
 // tRPC route handler
 app.use(

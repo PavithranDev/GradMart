@@ -50,10 +50,13 @@ export function DashboardSidebar() {
       </div>
 
       <div className="hidden lg:block">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors mt-8">
+        <button
+          onClick={() => window.location.href = "http://localhost:4000/api/logout"}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors mt-8 w-full"
+        >
           <LogOut className="w-5 h-5" />
           Log Out
-        </Link>
+        </button>
       </div>
     </aside>
   );

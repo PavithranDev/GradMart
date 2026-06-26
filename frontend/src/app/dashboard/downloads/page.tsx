@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Download, 
@@ -73,7 +73,35 @@ export default function DownloadsPage() {
     }, 200);
   };
 
-  if (isEmpty) {
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/user/dashboard", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error && data.purchases) {
+          setPurchases(data.purchases);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch purchases", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 lg:pl-10 pb-20 w-full flex items-center justify-center min-h-[500px]">
+         <div className="w-8 h-8 border-4 border-[#0a0a0a] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (purchases.length === 0) {
     return (
       <div className="flex-1 lg:pl-10 pb-20 w-full flex flex-col items-center justify-center text-center py-20 mt-8 lg:mt-0">
         <div className="w-24 h-24 bg-black/5 rounded-full flex items-center justify-center mb-6">
@@ -130,89 +158,86 @@ export default function DownloadsPage() {
       <div className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-black/5 flex items-center justify-between">
           <h2 className="text-[16px] font-bold text-[#0a0a0a]">Purchased Files</h2>
-          <span className="text-[13px] font-bold bg-[#f5f4ef] px-3 py-1 rounded-md">{DOWNLOADS.length} Items</span>
+          <span className="text-[13px] font-bold bg-[#f5f4ef] px-3 py-1 rounded-md">{purchases.length} Items</span>
         </div>
 
         <div className="divide-y divide-black/5">
-          {DOWNLOADS.map((item) => (
-            <div key={item.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:bg-[#f5f4ef]/50 transition-colors">
-              
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0 text-[#0a0a0a]">
-                  <FileArchive className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-1 flex items-center gap-2">
-                    {item.title}
-                    {item.hasUpdate && (
-                      <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">Update Available</span>
-                    )}
-                  </h3>
-                  <div className="flex items-center gap-3 text-[12px] font-medium text-[rgba(10,10,10,0.5)]">
-                    <span className="flex items-center gap-1"><FileCode2 className="w-3.5 h-3.5" /> {item.version}</span>
-                    <span>•</span>
-                    <span>{item.size}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {item.date}</span>
+          {purchases.map((item) => {
+            const hasDriveLink = !!item.driveUrl;
+            return (
+              <div key={item.id} className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:bg-[#f5f4ef]/50 transition-colors">
+                
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0 text-[#0a0a0a]">
+                    <FileArchive className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-1 flex items-center gap-2">
+                      {item.title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-[12px] font-medium text-[rgba(10,10,10,0.5)]">
+                      <span className="flex items-center gap-1"><FileCode2 className="w-3.5 h-3.5" /> Source</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {item.date}</span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="w-full md:w-auto flex flex-col items-end gap-2">
+                  <AnimatePresence mode="wait">
+                    {downloadingId === item.id ? (
+                      <motion.div 
+                        key="progress"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full md:w-48 bg-black/5 h-10 rounded-xl overflow-hidden relative flex items-center justify-center"
+                      >
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-[#0a0a0a] transition-all duration-200" 
+                          style={{ width: `${progress}%` }} 
+                        />
+                        <span className="relative z-10 text-[12px] font-bold text-white mix-blend-difference">
+                          Processing... {progress}%
+                        </span>
+                      </motion.div>
+                    ) : successId === item.id ? (
+                      <motion.div 
+                        key="success"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="w-full md:w-48 bg-green-50 text-green-600 h-10 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px]"
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Ready
+                      </motion.div>
+                    ) : (
+                      <motion.button 
+                        key="button"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => {
+                          if (hasDriveLink) {
+                            window.open(item.driveUrl, '_blank');
+                          } else {
+                            handleDownload(item.id);
+                          }
+                        }}
+                        className="w-full md:w-48 bg-white border border-black/10 text-[#0a0a0a] h-10 rounded-xl font-bold text-[13px] hover:bg-black/5 hover:border-black/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        {hasDriveLink ? (
+                          <>Open Drive Link</>
+                        ) : (
+                          <><Download className="w-4 h-4" /> Download ZIP</>
+                        )}
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-
-              <div className="w-full md:w-auto flex flex-col items-end gap-2">
-                <AnimatePresence mode="wait">
-                  {downloadingId === item.id ? (
-                    <motion.div 
-                      key="progress"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="w-full md:w-48 bg-black/5 h-10 rounded-xl overflow-hidden relative flex items-center justify-center"
-                    >
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-[#0a0a0a] transition-all duration-200" 
-                        style={{ width: `${progress}%` }} 
-                      />
-                      <span className="relative z-10 text-[12px] font-bold text-white mix-blend-difference">
-                        Downloading... {progress}%
-                      </span>
-                    </motion.div>
-                  ) : successId === item.id ? (
-                    <motion.div 
-                      key="success"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="w-full md:w-48 bg-green-50 text-green-600 h-10 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px]"
-                    >
-                      <CheckCircle2 className="w-4 h-4" /> Downloaded
-                    </motion.div>
-                  ) : (
-                    <motion.button 
-                      key="button"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => handleDownload(item.id)}
-                      className="w-full md:w-48 bg-white border border-black/10 text-[#0a0a0a] h-10 rounded-xl font-bold text-[13px] hover:bg-black/5 hover:border-black/20 transition-all flex items-center justify-center gap-2"
-                    >
-                      {item.date.includes("Today") ? (
-                        <><Download className="w-4 h-4" /> Download Now</>
-                      ) : (
-                        <><RefreshCcw className="w-4 h-4" /> Re-download</>
-                      )}
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-
-                {item.hasUpdate && (
-                  <button className="text-[12px] font-bold text-blue-600 hover:underline flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> View v1.5.0 Changelog
-                  </button>
-                )}
-              </div>
-
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

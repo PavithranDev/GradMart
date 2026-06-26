@@ -127,4 +127,71 @@ router.delete('/project/:id', async (req, res) => {
   }
 });
 
+// GET /api/admin/custom-projects - Get all custom project requests
+router.get('/custom-projects', async (req, res) => {
+  try {
+    const projects = await prisma.customProjectRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { name: true, email: true, phone: true }
+        }
+      }
+    });
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching custom projects for admin:', error);
+    res.status(500).json({ error: 'Failed to fetch custom projects' });
+  }
+});
+
+// PUT /api/admin/custom-projects/:id/status - Update custom project status
+router.put('/custom-projects/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const project = await prisma.customProjectRequest.update({
+      where: { id },
+      data: { status },
+      include: {
+        user: {
+          select: { name: true, email: true, phone: true }
+        }
+      }
+    });
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error updating custom project status:', error);
+    res.status(500).json({ error: 'Failed to update custom project status' });
+  }
+});
+
+// PUT /api/admin/custom-projects/:id/quote - Admin sends a budget quote
+router.put('/custom-projects/:id/quote', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quotedBudget } = req.body;
+
+    const project = await prisma.customProjectRequest.update({
+      where: { id },
+      data: { 
+        quotedBudget,
+        status: 'QUOTED'
+      },
+      include: {
+        user: {
+          select: { name: true, email: true, phone: true }
+        }
+      }
+    });
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error updating custom project quote:', error);
+    res.status(500).json({ error: 'Failed to update custom project quote' });
+  }
+});
+
 export default router;

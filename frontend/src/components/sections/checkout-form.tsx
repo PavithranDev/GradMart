@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PaymentSuccessOverlay } from "../ui/payment-success-overlay";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const PAYMENT_METHODS = [
   { id: "razorpay", name: "Razorpay" },
@@ -11,13 +13,42 @@ const PAYMENT_METHODS = [
   { id: "wallet", name: "Wallets" },
 ];
 
-export function CheckoutForm() {
+export function CheckoutForm({ project }: { project: any }) {
   const [selectedMethod, setSelectedMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
+  const router = useRouter();
 
-  const handleCheckout = (e: React.FormEvent) => {
+  if (!project) return null;
+
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+
+    try {
+      const res = await fetch("http://localhost:4000/api/purchases", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ projectId: project.id }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to process purchase");
+      }
+
+      // Show success overlay for a moment before redirecting
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 3000);
+
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Something went wrong");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -79,7 +110,7 @@ export function CheckoutForm() {
         <div className="bg-[#f5f4ef] rounded-2xl p-6 mb-8 space-y-3">
           <div className="flex justify-between text-[14px] font-medium text-[rgba(10,10,10,0.7)]">
             <span>Subtotal</span>
-            <span>₹499</span>
+            <span>{project.price === 0 ? "₹0" : `₹${project.price}`}</span>
           </div>
           <div className="flex justify-between text-[14px] font-medium text-green-600">
             <span>Discount</span>
@@ -88,15 +119,16 @@ export function CheckoutForm() {
           <hr className="border-black/10 my-3" />
           <div className="flex justify-between text-[18px] font-bold text-[#0a0a0a]">
             <span>Total</span>
-            <span>₹499</span>
+            <span>{project.price === 0 ? "₹0" : `₹${project.price}`}</span>
           </div>
         </div>
 
         <button 
           type="submit"
-          className="w-full bg-[#0a0a0a] text-white py-4 rounded-full font-bold text-[15px] hover:bg-neutral-800 transition-all hover:shadow-lg flex items-center justify-center gap-2"
+          disabled={isProcessing}
+          className="w-full bg-[#0a0a0a] text-white py-4 rounded-full font-bold text-[15px] hover:bg-neutral-800 transition-all hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Complete Purchase
+          {isProcessing ? "Processing..." : "Complete Purchase"}
         </button>
       </form>
 

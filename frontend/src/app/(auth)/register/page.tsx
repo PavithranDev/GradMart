@@ -6,9 +6,11 @@ import * as z from "zod";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+// ... existing schema ...
 const registerSchema = z.object({
   fullName: z.string().min(2, "Full Name is required."),
   email: z.string().email("Please enter a valid email address."),
@@ -27,8 +29,10 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
   
   const {
     register,
@@ -60,7 +64,7 @@ export default function RegisterPage() {
       }
 
       toast.success("Account created successfully!");
-      router.push("/login");
+      router.push(`/login${redirectUrl !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`);
     } catch (error) {
       console.error(error);
       toast.error("An unexpected error occurred");
@@ -193,10 +197,18 @@ export default function RegisterPage() {
 
       <div className="mt-8 text-center text-[13px] font-medium text-[rgba(10,10,10,0.6)]">
         Already have an account?{" "}
-        <Link href="/login" className="font-bold text-[#0a0a0a] hover:underline">
+        <Link href={`/login${redirectUrl !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`} className="font-bold text-[#0a0a0a] hover:underline">
           Log In
         </Link>
       </div>
     </motion.div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
