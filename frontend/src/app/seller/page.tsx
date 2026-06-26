@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { DollarSign, Download, Users, TrendingUp } from "lucide-react";
+import { DollarSign, Download, Users, TrendingUp, FolderGit2, Star, Percent, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 const DATA = [
   { name: "Jan", revenue: 1200 },
@@ -20,27 +22,56 @@ const DATA = [
 ];
 
 export default function SellerDashboardPage() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/seller/dashboard", { credentials: "include" })
+      .then(res => res.json())
+      .then(d => {
+        setData(d);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex-1 w-full flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-black/20" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 w-full p-8 lg:p-12 overflow-y-auto">
       
       {/* Header */}
       <div className="mb-10 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#0a0a0a] tracking-tight mb-1">Welcome, Creator</h1>
+          <h1 className="text-[28px] font-bold text-[#0a0a0a] tracking-tight mb-1">Seller Overview</h1>
           <p className="text-[14px] text-[rgba(10,10,10,0.6)] font-medium">Here is how your projects are performing.</p>
         </div>
-        <button className="hidden sm:flex bg-[#0a0a0a] text-white px-6 py-3 rounded-full font-bold text-[14px] hover:bg-neutral-800 transition-all shadow-lg items-center gap-2">
+        <Link 
+          href="/seller/withdrawals"
+          className="hidden sm:flex bg-[#0a0a0a] text-white px-6 py-3 rounded-full font-bold text-[14px] hover:bg-neutral-800 transition-all shadow-lg items-center gap-2"
+        >
           Withdraw Funds
-        </button>
+        </Link>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         {[
-          { title: "Total Sales", value: 458, prefix: "", icon: TrendingUp, color: "text-blue-600", bg: "bg-blue-50" },
-          { title: "Revenue", value: 105000, prefix: "₹", icon: DollarSign, color: "text-green-600", bg: "bg-green-50" },
-          { title: "Downloads", value: 1240, prefix: "", icon: Download, color: "text-purple-600", bg: "bg-purple-50" },
-          { title: "Followers", value: 342, prefix: "", icon: Users, color: "text-orange-600", bg: "bg-orange-50" },
+          { title: "Total Revenue", value: data?.totalRevenue || 0, prefix: "₹", icon: DollarSign, color: "text-green-600", bg: "bg-green-50" },
+          { title: "Total Downloads", value: data?.totalDownloads || 0, prefix: "", icon: Download, color: "text-blue-600", bg: "bg-blue-50" },
+          { title: "Projects Published", value: data?.totalProjects || 0, prefix: "", icon: FolderGit2, color: "text-purple-600", bg: "bg-purple-50" },
+          { title: "Total Sales", value: data?.totalSales || 0, prefix: "", icon: Percent, color: "text-orange-600", bg: "bg-orange-50" },
+          { title: "Followers", value: 0, prefix: "", icon: Users, color: "text-pink-600", bg: "bg-pink-50" },
+          { title: "Average Rating", value: 0, prefix: "", icon: Star, color: "text-amber-600", bg: "bg-amber-50", isFloat: true },
         ].map((stat, idx) => (
           <div key={idx} className="bg-white rounded-2xl p-6 border border-black/5 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
@@ -49,9 +80,13 @@ export default function SellerDashboardPage() {
               </div>
             </div>
             <div className="text-[13px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider mb-1">{stat.title}</div>
-            <div className="text-[28px] font-bold text-[#0a0a0a] tracking-tight">
+            <div className="text-[28px] font-bold text-[#0a0a0a] tracking-tight flex items-baseline">
               {stat.prefix}
-              <NumberTicker value={stat.value} delay={0.2} />
+              {stat.isFloat ? (
+                <span>{stat.value}{stat.suffix}</span>
+              ) : (
+                <><NumberTicker value={stat.value} delay={0.2} />{stat.suffix}</>
+              )}
             </div>
           </div>
         ))}
@@ -61,7 +96,10 @@ export default function SellerDashboardPage() {
         
         {/* Revenue Chart */}
         <div className="xl:col-span-2 bg-white rounded-2xl p-6 md:p-8 border border-black/5 shadow-sm">
-          <h2 className="text-[16px] font-bold text-[#0a0a0a] mb-8">Sales Analytics</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-[16px] font-bold text-[#0a0a0a]">Revenue Analytics</h2>
+            <Link href="/seller/analytics" className="text-[13px] font-bold text-blue-600 hover:underline">View Full Analytics</Link>
+          </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={DATA} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -86,6 +124,7 @@ export default function SellerDashboardPage() {
         <div className="xl:col-span-1 bg-white rounded-2xl p-6 border border-black/5 shadow-sm overflow-hidden flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-[16px] font-bold text-[#0a0a0a]">Popular Projects</h2>
+            <Link href="/seller/projects" className="text-[13px] font-bold text-blue-600 hover:underline">View All</Link>
           </div>
           
           <div className="flex-1 overflow-y-auto pr-2 -mr-2">

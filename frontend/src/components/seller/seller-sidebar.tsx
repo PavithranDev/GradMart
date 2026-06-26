@@ -13,17 +13,21 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bell,
+  GitCommit
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const SELLER_ROUTES = [
-  { href: "/seller", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/seller", label: "Overview", icon: LayoutDashboard },
   { href: "/seller/projects", label: "My Projects", icon: FolderGit2 },
-  { href: "/seller/sales", label: "Sales", icon: TrendingUp },
-  { href: "/seller/withdrawals", label: "Withdrawals", icon: Wallet },
+  { href: "/seller/project-version", label: "Versions & Updates", icon: GitCommit },
   { href: "/seller/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/seller/withdrawals", label: "Withdrawals", icon: Wallet },
+  { href: "/seller/levels", label: "Seller Levels", icon: TrendingUp },
   { href: "/seller/messages", label: "Messages", icon: MessageSquare },
+  { href: "/seller/notifications", label: "Notifications", icon: Bell },
   { href: "/seller/settings", label: "Settings", icon: Settings },
 ];
 
@@ -107,6 +111,7 @@ export function SellerSidebar() {
       {/* Logout */}
       <div className="p-4 border-t border-black/5 flex-shrink-0">
         <button
+          onClick={() => window.location.href = "http://localhost:4000/api/logout"}
           title={isCollapsed ? "Logout" : undefined}
           className={`flex items-center w-full px-3 py-2.5 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors ${isCollapsed ? 'justify-center' : 'gap-3'
             }`}

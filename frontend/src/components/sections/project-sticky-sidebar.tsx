@@ -1,13 +1,25 @@
 "use client";
 
 import { CheckCircle2, ShieldCheck, Heart } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth/AuthContext";
 
 interface ProjectStickySidebarProps {
   project: any;
 }
 
 export function ProjectStickySidebar({ project }: ProjectStickySidebarProps) {
+  const router = useRouter();
+  const { status } = useSession();
+
+  const handleBuyNow = () => {
+    if (status === 'authenticated') {
+      router.push(`/checkout`);
+    } else {
+      router.push(`/login?redirect=/checkout`);
+    }
+  };
+
   return (
     <div className="w-full lg:w-[380px] flex-shrink-0">
       <div className="sticky top-32 bg-white rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-black/5 flex flex-col gap-6">
@@ -40,12 +52,12 @@ export function ProjectStickySidebar({ project }: ProjectStickySidebarProps) {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-3">
-          <Link 
-            href="/checkout"
+          <button 
+            onClick={handleBuyNow}
             className="w-full bg-[#0a0a0a] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-neutral-800 transition-all hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
             Buy Now
-          </Link>
+          </button>
           
           <div className="flex gap-3">
             <button className="flex-1 bg-white text-[#0a0a0a] border border-[#0a0a0a]/10 py-3 rounded-xl font-semibold text-[14px] hover:bg-[#0a0a0a]/5 transition-colors">

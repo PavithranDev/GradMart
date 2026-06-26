@@ -3,7 +3,9 @@ import { DM_Sans, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { LenisProvider } from "@/components/providers/lenis-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/ui/command-palette";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 
 const dmSans = DM_Sans({ 
   subsets: ["latin"],
@@ -67,10 +69,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${cormorant.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LenisProvider>
-            {children}
-            <CommandPalette />
-          </LenisProvider>
+          <AuthProvider>
+            <LenisProvider>
+              {children}
+              <CommandPalette />
+              <Toaster position="bottom-right" richColors toastOptions={{ style: { borderRadius: '16px', fontFamily: 'var(--font-dm-sans)' } }} />
+            </LenisProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

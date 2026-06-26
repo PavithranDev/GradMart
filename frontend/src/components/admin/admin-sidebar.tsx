@@ -15,12 +15,21 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Briefcase,
+  BrainCircuit,
+  Bot,
+  Database
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const ADMIN_LINKS = [
   { href: "/admin", label: "Analytics", icon: LayoutDashboard },
+  { href: "/admin/projects", label: "Projects", icon: Database },
+  { href: "/admin/assistant", label: "AI Assistant", icon: Bot },
+  { href: "/admin/assets", label: "Asset Manager", icon: Database },
+  { href: "/admin/recommendations", label: "AI Recommendations", icon: BrainCircuit },
+  { href: "/admin/crm", label: "Custom Projects CRM", icon: Briefcase },
   { href: "/admin/revenue", label: "Revenue Reports", icon: BarChart3 },
   { href: "/admin/heatmap", label: "Sales Heatmap", icon: Map },
   { href: "/admin/approvals", label: "Project Approvals", icon: CheckSquare },
@@ -135,6 +144,7 @@ export function AdminSidebar() {
         </AnimatePresence>
 
         <button
+          onClick={() => window.location.href = "http://localhost:4000/api/logout"}
           title={isCollapsed ? "Logout" : undefined}
           className={`flex items-center w-full px-3 py-2.5 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors ${isCollapsed ? 'justify-center' : 'gap-3'
             }`}

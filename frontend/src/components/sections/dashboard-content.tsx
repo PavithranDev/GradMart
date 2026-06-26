@@ -1,21 +1,70 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Crown, FolderDot, ArrowUpRight } from "lucide-react";
+import { Download, Crown, FolderDot, ArrowUpRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "@/lib/auth/AuthContext";
 
-const MY_PURCHASES = [
-  { id: 1, title: "AI Smart Attendance", category: "AI & ML", date: "Oct 12, 2023", image: "#8b5cf6" },
-  { id: 2, title: "Campus ERP System", category: "Next.js", date: "Nov 04, 2023", image: "#e8430a" },
-];
+type Purchase = {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  image: string;
+};
+
+type DashboardData = {
+  stats: {
+    projectsBought: number;
+    totalDownloads: number;
+  };
+  purchases: Purchase[];
+};
 
 export function DashboardContent() {
+  const { session, status } = useSession();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  const userName = session?.user?.name || "User";
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetch("http://localhost:4000/api/user/dashboard", {
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) {
+            console.error(data.error);
+            setData(null);
+          } else {
+            setData(data);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch dashboard data", err);
+          setLoading(false);
+        });
+    }
+  }, [status]);
+
+  if (loading || status === "loading") {
+    return (
+      <div className="flex-1 w-full flex items-center justify-center min-h-[500px]">
+        <Loader2 className="w-8 h-8 animate-spin text-black/20" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 w-full p-6 lg:p-12 lg:pl-16">
       
       {/* Header & Stats */}
       <div className="mb-12">
-        <h1 className="text-3xl font-bold text-[#0a0a0a] mb-2">Welcome Back, John</h1>
+        <h1 className="text-3xl font-bold text-[#0a0a0a] mb-2">Welcome Back, {userName}</h1>
         <p className="text-[14px] text-[rgba(10,10,10,0.6)] font-medium mb-8">
           Here is what's happening with your projects today.
         </p>
@@ -25,14 +74,14 @@ export function DashboardContent() {
             <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
               <FolderDot className="w-5 h-5" />
             </div>
-            <div className="text-[28px] font-bold text-[#0a0a0a] mb-1">2</div>
+            <div className="text-[28px] font-bold text-[#0a0a0a] mb-1">{data?.stats?.projectsBought || 0}</div>
             <div className="text-[13px] text-[rgba(10,10,10,0.6)] font-medium">Projects Bought</div>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-black/5 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4">
               <Download className="w-5 h-5" />
             </div>
-            <div className="text-[28px] font-bold text-[#0a0a0a] mb-1">6</div>
+            <div className="text-[28px] font-bold text-[#0a0a0a] mb-1">{data?.stats?.totalDownloads || 0}</div>
             <div className="text-[13px] text-[rgba(10,10,10,0.6)] font-medium">Total Downloads</div>
           </div>
         </div>
@@ -70,13 +119,13 @@ export function DashboardContent() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {MY_PURCHASES.map((project, idx) => (
+          {data?.purchases?.map((project, idx) => (
             <motion.div 
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white rounded-2xl overflow-hidden border border-black/5 shadow-sm group hover:shadow-xl transition-all duration-300"
+              className="bg-white rounded-2xl overflow-hidden border border-black/5 shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col"
             >
               <div 
                 className="w-full h-40 relative"
@@ -84,18 +133,23 @@ export function DashboardContent() {
               >
                 <div className="absolute inset-0 bg-black/20" />
               </div>
-              <div className="p-6">
+              <div className="p-6 flex-1 flex flex-col">
                 <div className="text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider mb-2">
                   Purchased {project.date}
                 </div>
-                <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6">{project.title}</h3>
+                <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6 flex-1">{project.title}</h3>
                 
-                <button className="w-full bg-[#f5f4ef] text-[#0a0a0a] py-3 rounded-xl font-bold text-[13px] hover:bg-[#0a0a0a] hover:text-white transition-colors flex items-center justify-center gap-2">
+                <button className="w-full mt-auto bg-[#f5f4ef] text-[#0a0a0a] py-3 rounded-xl font-bold text-[13px] hover:bg-[#0a0a0a] hover:text-white transition-colors flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" /> Download Files (.zip)
                 </button>
               </div>
             </motion.div>
           ))}
+          {(!data?.purchases || data.purchases.length === 0) && (
+            <div className="col-span-full py-12 text-center text-[15px] font-medium text-black/40">
+              You haven't purchased any projects yet.
+            </div>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,8 @@ import * as z from "zod";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const registerSchema = z.object({
   fullName: z.string().min(2, "Full Name is required."),
@@ -26,6 +28,8 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
+  
   const {
     register,
     handleSubmit,
@@ -35,10 +39,32 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    // Simulate API Call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Registration Attempt:", data);
-    window.location.href = "/dashboard"; // Simulated Redirect
+    try {
+      const res = await fetch("http://localhost:4000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: data.fullName,
+          email: data.email,
+          password: data.password,
+          phone: data.phone,
+          college: data.college,
+          department: data.department
+        })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        toast.error(error.error || "Registration failed");
+        return;
+      }
+
+      toast.success("Account created successfully!");
+      router.push("/login");
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred");
+    }
   };
 
   return (
@@ -61,7 +87,7 @@ export default function RegisterPage() {
               {...register("fullName")}
               type="text" 
               placeholder="John Doe" 
-              className={`w-full bg-[#f5f4ef]/50 border ${errors.fullName ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+              className={`w-full bg-[#f5f4ef]/50 border ${errors.fullName ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
             />
             {errors.fullName && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.fullName.message}</p>}
           </div>
@@ -73,7 +99,7 @@ export default function RegisterPage() {
                 {...register("email")}
                 type="email" 
                 placeholder="name@example.com" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.email ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.email ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.email && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.email.message}</p>}
             </div>
@@ -83,7 +109,7 @@ export default function RegisterPage() {
                 {...register("phone")}
                 type="tel" 
                 placeholder="+91 9876543210" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.phone ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.phone ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.phone && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.phone.message}</p>}
             </div>
@@ -96,7 +122,7 @@ export default function RegisterPage() {
                 {...register("college")}
                 type="text" 
                 placeholder="MIT / IIT" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.college ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.college ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.college && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.college.message}</p>}
             </div>
@@ -106,7 +132,7 @@ export default function RegisterPage() {
                 {...register("department")}
                 type="text" 
                 placeholder="Computer Science" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.department ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.department ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.department && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.department.message}</p>}
             </div>
@@ -119,7 +145,7 @@ export default function RegisterPage() {
                 {...register("password")}
                 type="password" 
                 placeholder="••••••••" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.password ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.password ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.password && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.password.message}</p>}
             </div>
@@ -129,7 +155,7 @@ export default function RegisterPage() {
                 {...register("confirmPassword")}
                 type="password" 
                 placeholder="••••••••" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.confirmPassword ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+                className={`w-full bg-[#f5f4ef]/50 border ${errors.confirmPassword ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.confirmPassword && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.confirmPassword.message}</p>}
             </div>

@@ -49,14 +49,14 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-widest rounded-full">
-                      {project.price}
+                      {project.price === 0 ? "Free" : "Premium"}
                     </span>
                     <span className="text-white/80 text-[13px] font-medium">
                       ★ {project.rating}
                     </span>
                   </div>
                   <h2 className="text-3xl font-bold text-white mb-1">{project.title}</h2>
-                  <p className="text-white/80 text-[14px]">{project.tech}</p>
+                  <p className="text-white/80 text-[14px]">{project.category}</p>
                 </div>
               </div>
 
@@ -66,13 +66,13 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                 {/* Main Content */}
                 <div className="flex-1">
                   <h3 className="text-[18px] font-bold text-[#0a0a0a] mb-3">Project Overview</h3>
-                  <p className="text-[14px] text-[rgba(10,10,10,0.6)] leading-relaxed mb-6">
-                    This is a comprehensive {project.title} designed for final year students. It includes a complete setup guide, database schemas, and clean, documented source code. Built using modern best practices and fully responsive design.
+                  <p className="text-[14px] text-[rgba(10,10,10,0.6)] leading-relaxed mb-6 whitespace-pre-line">
+                    {project.description || `This is a comprehensive ${project.title} designed for final year students. It includes a complete setup guide, database schemas, and clean, documented source code. Built using modern best practices and fully responsive design.`}
                   </p>
 
                   <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-3">Key Features</h3>
                   <ul className="space-y-2 mb-6">
-                    {["User Authentication & Authorization", "Real-time Dashboard Analytics", "Responsive Mobile-first Design", "Admin Control Panel"].map((feature, i) => (
+                    {(project.tags && project.tags.length > 0 ? project.tags : ["User Authentication & Authorization", "Real-time Dashboard Analytics", "Responsive Mobile-first Design", "Admin Control Panel"]).map((feature: string, i: number) => (
                       <li key={i} className="flex items-start gap-2 text-[14px] text-[rgba(10,10,10,0.6)]">
                         <span className="text-green-500 mt-0.5">•</span>
                         {feature}
@@ -86,7 +86,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                   <div className="bg-[#f5f4ef] rounded-2xl p-5">
                     <h4 className="text-[14px] font-bold text-[#0a0a0a] mb-3">Files Included</h4>
                     <div className="space-y-2.5">
-                      {["Source Code (Zip)", "Project Report (Docx)", "Presentation (PPT)", "Setup Guide (PDF)"].map((file) => (
+                      {(project.features && project.features.length > 0 ? project.features : ["Source Code (Zip)", "Project Report (Docx)", "Presentation (PPT)", "Setup Guide (PDF)"]).map((file: string) => (
                         <div key={file} className="flex items-center gap-2 text-[13px] text-[rgba(10,10,10,0.7)] font-medium">
                           <CheckCircle2 className="w-4 h-4 text-[#0a0a0a]" />
                           {file}
@@ -97,7 +97,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
 
                   <div className="flex flex-col gap-3">
                     <button className="w-full bg-[#0a0a0a] text-white py-3.5 rounded-full font-semibold text-[14px] hover:bg-neutral-800 transition-colors shadow-lg flex items-center justify-center gap-2">
-                      Buy Now — {project.price === "Free" ? "FREE" : "₹499"}
+                      Buy Now — {project.price === 0 ? "FREE" : `₹${project.price}`}
                     </button>
                     <Link 
                       href={`/projects/${project.id || 'ai-attendance-system'}`}

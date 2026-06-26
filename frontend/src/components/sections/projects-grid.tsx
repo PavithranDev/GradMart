@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProjectModal } from "../ui/project-modal";
+import { Loader2 } from "lucide-react";
 
 const SAMPLE_PROJECTS = [
   { id: 1, title: "AI Attendance", tech: "React • Python", price: "Premium", image: "#e8430a", rating: "4.9" },
@@ -21,11 +22,34 @@ const SAMPLE_PROJECTS = [
 
 export function ProjectsGrid() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:4000/api/projects")
+      .then(res => res.json())
+      .then(data => {
+        setProjects(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch projects", err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex w-full items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-black/20" />
+      </div>
+    );
+  }
 
   return (
     <section className="px-4 md:px-12 mb-20 w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {SAMPLE_PROJECTS.map((project, index) => (
+        {projects.map((project, index) => (
           <motion.div
             key={project.id}
             initial={{ opacity: 0, y: 20 }}
@@ -42,7 +66,7 @@ export function ProjectsGrid() {
             >
                {/* Badge */}
                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-widest border border-white/10">
-                 {project.price}
+                 {project.price === 0 ? "Free" : "Premium"}
                </div>
             </div>
             
@@ -54,9 +78,9 @@ export function ProjectsGrid() {
                 </div>
               </div>
               <div className="flex items-center justify-between text-[13px] text-[rgba(10,10,10,0.6)] font-medium">
-                <span>{project.tech}</span>
+                <span>{project.category}</span>
                 <span className="text-[#0a0a0a] font-bold">
-                  {project.price === "Free" ? "FREE" : "₹499"}
+                  {project.price === 0 ? "FREE" : `₹${project.price}`}
                 </span>
               </div>
             </div>

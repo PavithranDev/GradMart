@@ -6,6 +6,11 @@ import * as z from "zod";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { useSession } from "@/lib/auth/AuthContext";
+
+import { Suspense } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -15,7 +20,12 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
+  const { updateSession } = useSession();
+
   const {
     register,
     handleSubmit,
@@ -25,10 +35,68 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    // Simulate API Call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Login Attempt:", data);
-    window.location.href = "/dashboard"; // Simulated Redirect
+    try {
+      // 1. Get CSRF Token
+      const csrfRes = await fetch("http://localhost:4000/api/auth/csrf", {
+        credentials: "include",
+      });
+      const { csrfToken } = await csrfRes.json();
+
+      // 2. Perform Login
+      const res = await fetch("http://localhost:4000/api/auth/callback/credentials", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Auth-Return-Redirect": "1",
+        },
+        credentials: "include",
+        body: new URLSearchParams({
+          csrfToken,
+          email: data.email,
+          password: data.password,
+          redirect: "false",
+        }),
+      });
+
+      const result = await res.json();
+      
+      if (result.url && result.url.includes("error=")) {
+        const urlObj = new URL(result.url);
+        const errorMsg = urlObj.searchParams.get("error");
+        
+        if (errorMsg === "CredentialsSignin" || errorMsg === "Configuration") {
+          toast.error("Invalid email or password");
+        } else {
+          toast.error(`Login failed: ${errorMsg}`);
+        }
+        return;
+      }
+
+      // 3. Fetch user role to redirect correctly
+      const userRes = await fetch("http://localhost:4000/api/user/me", {
+        credentials: "include",
+      });
+
+      await updateSession();
+
+      if (userRes.ok) {
+        const user = await userRes.json();
+        toast.success(`Welcome back, ${user.name || "User"}!`);
+        if (user.role === "ADMIN") {
+          router.push("/admin");
+        } else if (user.role === "SELLER") {
+          router.push("/seller");
+        } else {
+          router.push(redirectUrl);
+        }
+      } else {
+        toast.success("Welcome back!");
+        router.push(redirectUrl);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to connect to the server");
+    }
   };
 
   return (
@@ -51,7 +119,7 @@ export default function LoginPage() {
               {...register("email")}
               type="email" 
               placeholder="name@example.com" 
-              className={`w-full bg-[#f5f4ef]/50 border ${errors.email ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+              className={`w-full bg-[#f5f4ef]/50 border ${errors.email ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
             />
             {errors.email && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.email.message}</p>}
           </div>
@@ -62,7 +130,7 @@ export default function LoginPage() {
               {...register("password")}
               type="password" 
               placeholder="••••••••" 
-              className={`w-full bg-[#f5f4ef]/50 border ${errors.password ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
+              className={`w-full bg-[#f5f4ef]/50 border ${errors.password ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
             />
             {errors.password && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.password.message}</p>}
           </div>
@@ -110,5 +178,13 @@ export default function LoginPage() {
         </Link>
       </div>
     </motion.div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
