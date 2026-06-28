@@ -77,6 +77,29 @@ export default function CustomProjectsPage() {
     }
   };
 
+  const handleOnlinePayment = async (projectId: string, type: "advance" | "final") => {
+    setIsAccepting(`${projectId}-${type}`);
+    try {
+      const res = await fetch(`http://localhost:4000/api/custom-projects/${projectId}/pay-online`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (!data.error) {
+        toast.success("Payment completed successfully!");
+        setProjects(projects.map(p => p.id === projectId ? data : p));
+      } else {
+        toast.error(data.error || "Failed to process payment");
+      }
+    } catch (err) {
+      toast.error("Failed to process payment");
+    } finally {
+      setIsAccepting(null);
+    }
+  };
+
   const getStepIndex = (status: string) => {
     return TIMELINE_STEPS.findIndex(step => step.id === status);
   };
@@ -141,9 +164,6 @@ export default function CustomProjectsPage() {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 bg-white border border-black/10 text-[#0a0a0a] px-4 py-2.5 rounded-xl font-bold text-[13px] hover:bg-black/5 transition-colors shadow-sm">
-                      <MessageSquare className="w-4 h-4" /> Message Team
-                    </button>
                     <button disabled={project.status !== 'DELIVERED'} className="flex items-center gap-2 bg-black/5 text-[rgba(10,10,10,0.4)] px-4 py-2.5 rounded-xl font-bold text-[13px] disabled:cursor-not-allowed">
                       <Download className="w-4 h-4" /> Download Files
                     </button>
@@ -222,6 +242,50 @@ export default function CustomProjectsPage() {
                       className="bg-[#6c3bff] text-white px-6 py-2.5 rounded-xl font-bold text-[13px] hover:bg-[#5b32d9] transition-colors whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {isAccepting === project.id ? 'Accepting...' : 'Accept Quote'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Pending Advance Payment */}
+                {project.advanceRequested && !project.advancePaid && (
+                  <div className="mb-8 bg-blue-50 border border-blue-200 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <h3 className="text-[15px] font-bold text-[#0a0a0a] mb-1">Advance Payment Requested: ₹{project.advanceAmount?.toLocaleString('en-IN')}</h3>
+                        <p className="text-[13px] font-medium text-[rgba(10,10,10,0.6)]">
+                          Please complete this payment so the team can proceed with your project.
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleOnlinePayment(project.id, 'advance')}
+                      disabled={isAccepting === `${project.id}-advance`}
+                      className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-[13px] hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <span>💳</span> {isAccepting === `${project.id}-advance` ? 'Processing...' : 'Pay Now'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Pending Final Payment */}
+                {project.finalRequested && !project.finalPaid && (
+                  <div className="mb-8 bg-blue-50 border border-blue-200 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <h3 className="text-[15px] font-bold text-[#0a0a0a] mb-1">Final Payment Requested: ₹{project.finalAmount?.toLocaleString('en-IN')}</h3>
+                        <p className="text-[13px] font-medium text-[rgba(10,10,10,0.6)]">
+                          Your project is ready! Please complete the final payment to receive your files.
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleOnlinePayment(project.id, 'final')}
+                      disabled={isAccepting === `${project.id}-final`}
+                      className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-[13px] hover:bg-blue-700 transition-colors whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <span>💳</span> {isAccepting === `${project.id}-final` ? 'Processing...' : 'Pay Now'}
                     </button>
                   </div>
                 )}

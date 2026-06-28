@@ -107,11 +107,14 @@ export function ProjectStickySidebar({ project }: ProjectStickySidebarProps) {
           </button>
           
           <div className="flex gap-3">
-            <button className="flex-1 bg-white text-[#0a0a0a] border border-[#0a0a0a]/10 py-3 rounded-xl font-semibold text-[14px] hover:bg-[#0a0a0a]/5 transition-colors">
-              Live Preview
-            </button>
-            <button className="w-12 h-12 flex items-center justify-center bg-white border border-[#0a0a0a]/10 rounded-xl text-[#0a0a0a] hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-colors">
+            {project.livePreviewUrl && (
+              <button onClick={() => window.open(project.livePreviewUrl, '_blank')} className="flex-1 bg-white text-[#0a0a0a] border border-[#0a0a0a]/10 py-3 rounded-xl font-semibold text-[14px] hover:bg-[#0a0a0a]/5 transition-colors">
+                Live Preview
+              </button>
+            )}
+            <button className={`${project.livePreviewUrl ? 'w-12' : 'flex-1'} h-12 flex items-center justify-center bg-white border border-[#0a0a0a]/10 rounded-xl text-[#0a0a0a] hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-colors`}>
               <Heart className="w-5 h-5" />
+              {!project.livePreviewUrl && <span className="ml-2 font-semibold text-[14px]">Save for Later</span>}
             </button>
           </div>
         </div>

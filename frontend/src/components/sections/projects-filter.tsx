@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const FILTERS = [
   "All",
@@ -20,7 +21,17 @@ const FILTERS = [
 ];
 
 export function ProjectsFilter() {
-  const [active, setActive] = useState("All");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const active = searchParams.get('category') || "All";
+
+  const handleFilter = (filter: string) => {
+    if (filter === "All") {
+      router.push('/search');
+    } else {
+      router.push(`/search?category=${encodeURIComponent(filter)}`);
+    }
+  };
 
   return (
     <div className="w-full overflow-x-auto pb-4 hide-scrollbar">
@@ -28,10 +39,10 @@ export function ProjectsFilter() {
         {FILTERS.map((filter) => (
           <button
             key={filter}
-            onClick={() => setActive(filter)}
+            onClick={() => handleFilter(filter)}
             className={cn(
               "px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all duration-300 whitespace-nowrap",
-              active === filter
+              active === filter || (active.split(',').includes(filter))
                 ? "bg-[#0a0a0a] text-white shadow-md"
                 : "bg-white text-[#0a0a0a] border border-[#0a0a0a]/10 hover:bg-[#0a0a0a]/5 hover:border-[#0a0a0a]/20 text-[rgba(10,10,10,0.6)]"
             )}

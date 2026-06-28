@@ -24,7 +24,7 @@ export function SellerHeader() {
             <Menu className="w-6 h-6" />
           </button>
 
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/seller" className="flex items-center gap-2">
             <span className="text-[20px]">🎓</span>
             <span className="text-[16px] font-bold tracking-tight">GradMart</span>
           </Link>

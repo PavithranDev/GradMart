@@ -123,36 +123,6 @@ export default function DownloadsPage() {
         <p className="text-[14px] text-[rgba(10,10,10,0.6)] font-medium">Manage and securely download your purchased project files.</p>
       </div>
 
-      {/* Storage & Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-        <div className="bg-[#0a0a0a] rounded-3xl p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl pointer-events-none" />
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <HardDrive className="w-5 h-5 text-purple-400" />
-            <h3 className="text-[14px] font-bold text-white/70 uppercase tracking-wider">Cloud Storage</h3>
-          </div>
-          <div className="relative z-10">
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-bold text-white tracking-tight">255</span>
-              <span className="text-[14px] font-medium text-white/50">MB Used</span>
-            </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full w-[15%] bg-purple-500 rounded-full" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-black/5 rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <ShieldCheck className="w-5 h-5 text-green-500" />
-            <h3 className="text-[14px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider">File Verification</h3>
-          </div>
-          <div>
-            <span className="text-4xl font-bold text-[#0a0a0a] tracking-tight block mb-2">100%</span>
-            <p className="text-[13px] font-medium text-[rgba(10,10,10,0.6)]">All files are scanned, verified, and free of malicious code.</p>
-          </div>
-        </div>
-      </div>
 
       {/* Download History List */}
       <div className="bg-white rounded-3xl border border-black/5 shadow-sm overflow-hidden">

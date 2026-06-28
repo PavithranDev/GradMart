@@ -102,4 +102,36 @@ router.put('/:id/accept-quote', async (req, res) => {
   }
 });
 
+// PUT /api/custom-projects/:id/pay-online - Student completes online payment
+// In a real app this would verify with Razorpay. For now marks as paid.
+router.put('/:id/pay-online', async (req, res) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { type } = req.body; // 'advance' | 'final'
+
+    const project = await prisma.customProjectRequest.findUnique({ where: { id } });
+    if (!project || project.userId !== user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const data: any = {};
+    if (type === 'advance' && project.advanceRequested && !project.advancePaid) {
+      data.advancePaid = true;
+      data.advancePaidAt = new Date();
+    } else if (type === 'final' && project.finalRequested && !project.finalPaid) {
+      data.finalPaid = true;
+      data.finalPaidAt = new Date();
+    } else {
+      return res.status(400).json({ error: 'No pending payment of this type' });
+    }
+
+    const updated = await prisma.customProjectRequest.update({ where: { id }, data });
+    res.json(updated);
+  } catch (error) {
+    console.error('Error processing online payment:', error);
+    res.status(500).json({ error: 'Failed to process payment' });
+  }
+});
+
 export default router;

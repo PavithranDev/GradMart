@@ -129,8 +129,9 @@ export function DashboardContent() {
             >
               <div 
                 className="w-full h-40 relative"
-                style={{ background: project.image }}
+                style={!project.image?.startsWith('http') ? { background: project.image || "#6c3bff" } : {}}
               >
+                {project.image?.startsWith('http') && <img src={project.image} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />}
                 <div className="absolute inset-0 bg-black/20" />
               </div>
               <div className="p-6 flex-1 flex flex-col">
@@ -139,9 +140,35 @@ export function DashboardContent() {
                 </div>
                 <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6 flex-1">{project.title}</h3>
                 
-                <button className="w-full mt-auto bg-[#f5f4ef] text-[#0a0a0a] py-3 rounded-xl font-bold text-[13px] hover:bg-[#0a0a0a] hover:text-white transition-colors flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" /> Download Files (.zip)
-                </button>
+                <div className="flex flex-col gap-2 mt-auto">
+                  <button 
+                    onClick={() => {
+                      if (project.driveUrl) window.open(project.driveUrl, '_blank');
+                      else alert('Downloading ZIP...');
+                    }}
+                    className="w-full bg-[#0a0a0a] text-white py-2.5 rounded-xl font-bold text-[13px] hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" /> 
+                    {project.driveUrl ? "Source Code (Drive Link)" : "Source Code (.zip)"}
+                  </button>
+                  
+                  {(project.project?.pdfUrl || project.project?.pptUrl || project.project?.sqlUrl || project.project?.readmeUrl) && (
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      {project.project?.pdfUrl && (
+                        <button onClick={() => window.open(project.project.pdfUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PDF</button>
+                      )}
+                      {project.project?.pptUrl && (
+                        <button onClick={() => window.open(project.project.pptUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PPT</button>
+                      )}
+                      {project.project?.sqlUrl && (
+                        <button onClick={() => window.open(project.project.sqlUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> SQL DB</button>
+                      )}
+                      {project.project?.readmeUrl && (
+                        <button onClick={() => window.open(project.project.readmeUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> Guide</button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           ))}

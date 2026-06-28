@@ -128,7 +128,11 @@ export default function AdminProjectsPage() {
                 {projects.map((project) => (
                   <tr key={project.id} className="hover:bg-[#f5f4ef]/30 transition-colors group">
                     <td className="p-4 pl-6 flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg flex-shrink-0 shadow-sm" style={{ background: project.image }} />
+                      {project.thumbnail ? (
+                        <img src={project.thumbnail} alt={project.title} className="w-12 h-12 rounded-lg flex-shrink-0 object-cover shadow-sm" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg flex-shrink-0 shadow-sm" style={{ background: project.imageColor || project.image || "#6c3bff" }} />
+                      )}
                       <div>
                         <div className="text-[14px] font-bold text-[#0a0a0a] mb-0.5">{project.title}</div>
                         <div className="text-[12px] text-[rgba(10,10,10,0.5)] font-medium">{(project.tags && project.tags.length > 0) ? project.tags.join(', ') : project.category}</div>
@@ -167,7 +171,8 @@ export default function AdminProjectsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {projects.map((project) => (
             <div key={project.id} className="bg-white rounded-2xl overflow-hidden border border-black/5 shadow-sm group">
-              <div className="h-36 w-full relative" style={{ background: project.image }}>
+              <div className="h-36 w-full relative" style={!project.thumbnail ? { background: project.imageColor || project.image || "#6c3bff" } : {}}>
+                {project.thumbnail && <img src={project.thumbnail} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />}
                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => { setSelectedProject(project); setIsAddModalOpen(true); }} className="p-1.5 bg-white/90 rounded-md text-[#0a0a0a] hover:bg-white shadow-sm"><Edit2 className="w-3.5 h-3.5" /></button>
                   <button onClick={() => handleDelete(project.id)} className="p-1.5 bg-red-500/90 rounded-md text-white hover:bg-red-500 shadow-sm"><Trash2 className="w-3.5 h-3.5" /></button>

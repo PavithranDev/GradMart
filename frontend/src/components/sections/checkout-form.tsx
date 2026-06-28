@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PaymentSuccessOverlay } from "../ui/payment-success-overlay";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 const PAYMENT_METHODS = [
   { id: "razorpay", name: "Razorpay" },
@@ -60,16 +60,16 @@ export function CheckoutForm({ project }: { project: any }) {
         <div className="space-y-4 mb-10">
           <div>
             <label className="block text-[13px] font-bold text-[#0a0a0a] mb-1.5">Full Name</label>
-            <input type="text" required placeholder="John Doe" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
+            <input type="text" required placeholder="John Doe" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[13px] font-bold text-[#0a0a0a] mb-1.5">Email Address</label>
-              <input type="email" required placeholder="john@example.com" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
+              <input type="email" required placeholder="john@example.com" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
             </div>
             <div>
               <label className="block text-[13px] font-bold text-[#0a0a0a] mb-1.5">Phone Number</label>
-              <input type="tel" required placeholder="+91 98765 43210" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
+              <input type="tel" required placeholder="+91 98765 43210" className="w-full bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all" />
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@ export function CheckoutForm({ project }: { project: any }) {
         {/* Coupon */}
         <h2 className="text-[18px] font-bold text-[#0a0a0a] mb-6">Have a Coupon?</h2>
         <div className="flex gap-2 mb-10">
-          <input type="text" placeholder="Enter coupon code" className="flex-1 bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all uppercase" />
+          <input type="text" placeholder="Enter coupon code" className="flex-1 bg-[#f5f4ef]/50 border border-black/10 rounded-xl px-4 py-3 text-[14px] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] focus:border-transparent transition-all uppercase" />
           <button type="button" className="px-6 bg-[#f5f4ef] text-[#0a0a0a] font-bold text-[13px] rounded-xl hover:bg-neutral-200 transition-colors border border-black/5">Apply</button>
         </div>
 

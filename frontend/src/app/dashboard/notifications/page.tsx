@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   CheckCircle2, 
@@ -10,99 +10,106 @@ import {
   Megaphone,
   Trash2,
   Check,
-  CheckCheck
+  CheckCheck,
+  Info,
+  AlertCircle
 } from "lucide-react";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
-type NotificationType = 'purchase' | 'new_project' | 'coupon' | 'custom_project' | 'system';
+type NotificationType = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 
 interface Notification {
   id: string;
   type: NotificationType;
   title: string;
   message: string;
-  time: string;
-  read: boolean;
+  createdAt: string;
+  isRead: boolean;
+  link?: string;
 }
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "purchase",
-    title: "Payment Successful!",
-    message: "Your payment of ₹499 for 'AI Smart Attendance System' was successful. You can now download the files.",
-    time: "2 mins ago",
-    read: false
-  },
-  {
-    id: "2",
-    type: "custom_project",
-    title: "Custom Project Update",
-    message: "Our team has reviewed your request for 'IoT Smart Farming'. A quote has been provided.",
-    time: "1 hour ago",
-    read: false
-  },
-  {
-    id: "3",
-    type: "new_project",
-    title: "New Project Added in ML!",
-    message: "A new premium project 'Deep Learning Face Recognition' has been added to the Machine Learning category.",
-    time: "5 hours ago",
-    read: true
-  },
-  {
-    id: "4",
-    type: "coupon",
-    title: "Exclusive 50% Off Coupon",
-    message: "Use code GRAD50 at checkout to get 50% off your next purchase. Valid for 24 hours only!",
-    time: "1 day ago",
-    read: true
-  },
-  {
-    id: "5",
-    type: "system",
-    title: "System Maintenance Scheduled",
-    message: "GradMart will undergo scheduled maintenance tonight at 2:00 AM IST. Expect 15 mins of downtime.",
-    time: "2 days ago",
-    read: true
-  }
-];
-
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("http://localhost:4000/api/notifications", {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    
+    // Poll every 10 seconds for real-time feel
+    const intervalId = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
-      case 'purchase': return <CheckCircle2 className="w-5 h-5 text-green-600" />;
-      case 'new_project': return <Sparkles className="w-5 h-5 text-blue-600" />;
-      case 'coupon': return <Tag className="w-5 h-5 text-purple-600" />;
-      case 'custom_project': return <Code2 className="w-5 h-5 text-indigo-600" />;
-      case 'system': return <Megaphone className="w-5 h-5 text-orange-600" />;
+      case 'SUCCESS': return <CheckCircle2 className="w-5 h-5 text-green-600" />;
+      case 'WARNING': return <AlertCircle className="w-5 h-5 text-orange-600" />;
+      case 'ERROR': return <AlertCircle className="w-5 h-5 text-red-600" />;
+      default: return <Info className="w-5 h-5 text-blue-600" />;
     }
   };
 
   const getIconBg = (type: NotificationType) => {
     switch (type) {
-      case 'purchase': return 'bg-green-100';
-      case 'new_project': return 'bg-blue-100';
-      case 'coupon': return 'bg-purple-100';
-      case 'custom_project': return 'bg-indigo-100';
-      case 'system': return 'bg-orange-100';
+      case 'SUCCESS': return 'bg-green-100';
+      case 'WARNING': return 'bg-orange-100';
+      case 'ERROR': return 'bg-red-100';
+      default: return 'bg-blue-100';
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const markAsRead = async (id: string) => {
+    try {
+      await fetch("http://localhost:4000/api/notifications/mark-read", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+        credentials: "include",
+      });
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (error) {
+      console.error("Failed to mark as read:", error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      await fetch("http://localhost:4000/api/notifications/mark-read", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}), // Empty body for all
+        credentials: "include",
+      });
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      toast.success("All notifications marked as read");
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+    }
   };
 
   const deleteNotification = (id: string) => {
+    // Usually would call an API, but for now just optimistic UI delete
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <div className="flex-1 lg:pl-10 pb-20 w-full mt-8 lg:mt-0">
@@ -140,7 +147,11 @@ export default function NotificationsPage() {
         {/* List */}
         <div className="divide-y divide-black/5">
           <AnimatePresence initial={false}>
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="p-20 text-center flex flex-col items-center justify-center">
+                 <div className="w-8 h-8 border-4 border-[#0a0a0a]/20 border-t-[#0a0a0a] rounded-full animate-spin"></div>
+              </div>
+            ) : notifications.length === 0 ? (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -160,9 +171,9 @@ export default function NotificationsPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                  className={`p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-colors relative group ${notification.read ? 'hover:bg-black/5' : 'bg-purple-50/30 hover:bg-purple-50/50'}`}
+                  className={`p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-colors relative group ${notification.isRead ? 'hover:bg-black/5' : 'bg-purple-50/30 hover:bg-purple-50/50'}`}
                 >
-                  {!notification.read && (
+                  {!notification.isRead && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-[#6c3bff] rounded-r-full" />
                   )}
 
@@ -171,20 +182,20 @@ export default function NotificationsPage() {
                       {getIcon(notification.type)}
                     </div>
                     <div>
-                      <h3 className={`text-[15px] font-bold mb-1 ${notification.read ? 'text-[rgba(10,10,10,0.8)]' : 'text-[#0a0a0a]'}`}>
+                      <h3 className={`text-[15px] font-bold mb-1 ${notification.isRead ? 'text-[rgba(10,10,10,0.8)]' : 'text-[#0a0a0a]'}`}>
                         {notification.title}
                       </h3>
                       <p className="text-[13px] font-medium text-[rgba(10,10,10,0.6)] mb-2 max-w-2xl">
                         {notification.message}
                       </p>
                       <span className="text-[12px] font-bold text-[rgba(10,10,10,0.4)]">
-                        {notification.time}
+                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                       </span>
                     </div>
                   </div>
 
                   <div className="w-full md:w-auto flex flex-row items-center justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    {!notification.read && (
+                    {!notification.isRead && (
                       <button 
                         onClick={() => markAsRead(notification.id)}
                         className="p-2 rounded-lg text-[rgba(10,10,10,0.4)] hover:text-[#0a0a0a] hover:bg-black/5 transition-colors"

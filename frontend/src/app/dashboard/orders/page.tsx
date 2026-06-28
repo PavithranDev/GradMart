@@ -104,7 +104,9 @@ export default function OrderHistoryPage() {
                       <span className="text-[14px] font-bold text-[#0a0a0a]">{order.title}</span>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-[14px] font-bold text-[#0a0a0a]">Paid</span>
+                      <span className="text-[14px] font-bold text-[#0a0a0a]">
+                        {order.project?.price === 0 ? "FREE" : `₹${order.project?.price || "499"}`}
+                      </span>
                     </td>
                     <td className="px-6 py-5">
                       {getStatusBadge("paid")}

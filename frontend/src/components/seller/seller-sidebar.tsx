@@ -44,7 +44,7 @@ export function SellerSidebar() {
 
       {/* Logo & Toggle */}
       <div className="h-20 flex items-center justify-between px-6 border-b border-black/5 flex-shrink-0 relative">
-        <Link href="/" className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+        <Link href="/seller" className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
           <span className="text-[20px]">🎓</span>
           <AnimatePresence>
             {!isCollapsed && (

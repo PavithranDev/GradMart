@@ -194,4 +194,88 @@ router.put('/custom-projects/:id/quote', async (req, res) => {
   }
 });
 
+// PUT /api/admin/custom-projects/:id/payment - Admin marks payment received
+router.put('/custom-projects/:id/payment', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, amount, note } = req.body;
+    // type: 'advance' | 'final'
+
+    let data: any = { paymentNote: note };
+
+    if (type === 'advance') {
+      data.advanceAmount = Number(amount);
+      data.advancePaid = true;
+      data.advancePaidAt = new Date();
+    } else if (type === 'final') {
+      data.finalAmount = Number(amount);
+      data.finalPaid = true;
+      data.finalPaidAt = new Date();
+    }
+
+    const project = await prisma.customProjectRequest.update({
+      where: { id },
+      data,
+      include: { user: { select: { name: true, email: true, phone: true } } }
+    });
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error updating payment:', error);
+    res.status(500).json({ error: 'Failed to update payment' });
+  }
+});
+
+// PUT /api/admin/custom-projects/:id/request-payment - Admin requests online payment from student
+router.put('/custom-projects/:id/request-payment', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, amount } = req.body;
+    // type: 'advance' | 'final'
+
+    const data: any = {};
+    if (type === 'advance') {
+      data.advanceAmount = Number(amount);
+      data.advanceRequested = true;
+      data.advancePaid = false;
+    } else if (type === 'final') {
+      data.finalAmount = Number(amount);
+      data.finalRequested = true;
+      data.finalPaid = false;
+    }
+
+    const project = await prisma.customProjectRequest.update({
+      where: { id },
+      data,
+      include: { user: { select: { name: true, email: true, phone: true } } }
+    });
+
+    res.json(project);
+  } catch (error) {
+    console.error('Error requesting payment:', error);
+    res.status(500).json({ error: 'Failed to request payment' });
+  }
+});
+
+
+router.put('/custom-projects/:id/payment-amounts', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { advanceAmount, finalAmount } = req.body;
+
+    const project = await prisma.customProjectRequest.update({
+      where: { id },
+      data: {
+        ...(advanceAmount !== undefined && { advanceAmount: Number(advanceAmount) }),
+        ...(finalAmount !== undefined && { finalAmount: Number(finalAmount) }),
+      },
+      include: { user: { select: { name: true, email: true, phone: true } } }
+    });
+
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update payment amounts' });
+  }
+});
+
 export default router;

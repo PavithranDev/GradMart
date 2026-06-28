@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, UploadCloud, Plus, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { UploadButton } from "@/lib/uploadthing";
 
 interface AddProjectModalProps {
   isOpen: boolean;
@@ -32,14 +33,16 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
     description: initialData?.description || "",
     tags: initialData?.tags?.join(', ') || "",
     
-    // Uploads (mock strings for UI)
-    thumbnail: initialData?.thumbnail || "",
+    // Uploads
+    thumbnailUrl: initialData?.thumbnailUrl || initialData?.thumbnail || "",
+    galleryUrls: initialData?.galleryUrls || [],
     zipUrl: initialData?.zipUrl || "",
     driveUrl: initialData?.driveUrl || "",
     pdfUrl: initialData?.pdfUrl || "",
     pptUrl: initialData?.pptUrl || "",
     sqlUrl: initialData?.sqlUrl || "",
     readmeUrl: initialData?.readmeUrl || "",
+    livePreviewUrl: initialData?.livePreviewUrl || "",
     
     // Pricing
     isFree: initialData ? initialData.price === 0 : false,
@@ -64,6 +67,52 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 6));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+  const goToStep = (num: number) => {
+    // Allow jumping to any step when editing
+    if (initialData) setStep(num);
+    // When creating, only allow going to steps already visited
+    else if (num <= step) setStep(num);
+  };
+
+  const saveCurrentStep = async () => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: formData.title,
+        slug: formData.slug || generateSlug(formData.title),
+        category: formData.category,
+        description: formData.description,
+        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        price: formData.isFree ? 0 : Number(formData.price),
+        discount: Number(formData.discount) || 0,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        keywords: formData.keywords.split(',').map(t => t.trim()).filter(Boolean),
+        status: "Published",
+        thumbnail: formData.thumbnailUrl || null,
+        gallery: formData.galleryUrls,
+        driveUrl: formData.driveUrl || null,
+        zipUrl: formData.zipUrl || null,
+        pdfUrl: formData.pdfUrl || null,
+        pptUrl: formData.pptUrl || null,
+        sqlUrl: formData.sqlUrl || null,
+        readmeUrl: formData.readmeUrl || null,
+        livePreviewUrl: formData.livePreviewUrl || null,
+      };
+      const res = await fetch(`http://localhost:4000/api/admin/project/${initialData.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include"
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Step saved!");
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,8 +137,15 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         keywords: formData.keywords.split(',').map(t => t.trim()).filter(Boolean),
         status: "Published",
         imageColor: "#" + Math.floor(Math.random()*16777215).toString(16),
+        thumbnail: formData.thumbnailUrl || null,
+        gallery: formData.galleryUrls,
         driveUrl: formData.driveUrl || null,
         zipUrl: formData.zipUrl || null,
+        pdfUrl: formData.pdfUrl || null,
+        pptUrl: formData.pptUrl || null,
+        sqlUrl: formData.sqlUrl || null,
+        readmeUrl: formData.readmeUrl || null,
+        livePreviewUrl: formData.livePreviewUrl || null,
       };
 
       const url = initialData 
@@ -153,16 +209,28 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                   const num = i + 1;
                   const isActive = step === num;
                   const isPast = step > num;
+                  const isClickable = initialData ? true : num <= step;
                   return (
                     <div key={s} className="flex flex-col items-center gap-2 bg-[#f5f4ef]/50 px-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold transition-colors ${isActive ? 'bg-[#0a0a0a] text-white ring-4 ring-[#0a0a0a]/10' : isPast ? 'bg-green-500 text-white' : 'bg-white text-black/40 border border-black/10'}`}>
+                      <button
+                        type="button"
+                        onClick={() => goToStep(num)}
+                        disabled={!isClickable}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold transition-all ${isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'} ${isActive ? 'bg-[#0a0a0a] text-white ring-4 ring-[#0a0a0a]/10' : isPast ? 'bg-green-500 text-white' : 'bg-white text-black/40 border border-black/10'}`}
+                      >
                         {isPast ? <Check className="w-4 h-4" /> : num}
-                      </div>
-                      <span className={`text-[11px] font-bold uppercase tracking-wider ${isActive ? 'text-[#0a0a0a]' : 'text-black/40'}`}>{s}</span>
+                      </button>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-[#0a0a0a]' : 'text-[rgba(10,10,10,0.4)]'}`}>{s}</span>
                     </div>
                   );
                 })}
               </div>
+              {/* Edit mode quick-save hint */}
+              {initialData && (
+                <p className="text-[11px] font-medium text-[rgba(10,10,10,0.4)] mt-3 text-center">
+                  💡 Click any step above to jump directly to it
+                </p>
+              )}
             </div>
 
             {/* Form Content */}
@@ -235,21 +303,83 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {[
-                        { label: "Thumbnail Image", type: "image/*" },
-                        { label: "Gallery Images", type: "image/*", multiple: true },
-                        { label: "Project Report (PDF/DOCX)", type: ".pdf,.docx" },
-                        { label: "Presentation (PPT)", type: ".ppt,.pptx" },
-                        { label: "Database (SQL)", type: ".sql" },
-                        { label: "Setup Guide (README)", type: ".md,.txt" },
-                      ].map((upload, i) => (
-                        <div key={i} className="border-2 border-dashed border-black/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50 transition-colors cursor-pointer group h-32">
-                          <UploadCloud className="w-6 h-6 text-black/40 group-hover:text-blue-500 mb-2" />
-                          <span className="text-[12px] font-bold text-[#0a0a0a] mb-1">{upload.label}</span>
-                          <input type="file" accept={upload.type} multiple={upload.multiple} className="hidden" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      {/* Image Uploads (UploadThing) */}
+                      <div className="space-y-4">
+                        <div className="p-4 border-2 border-dashed border-black/10 rounded-2xl bg-white text-center">
+                          <h4 className="text-[13px] font-bold text-[#0a0a0a] mb-2">Thumbnail Image</h4>
+                          {formData.thumbnailUrl ? (
+                            <div className="relative rounded-xl overflow-hidden mb-2 border border-black/10">
+                              <img src={formData.thumbnailUrl} alt="Thumbnail" className="w-full h-32 object-cover" />
+                              <button type="button" onClick={() => setFormData({...formData, thumbnailUrl: ""})} className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center text-red-500 shadow-md hover:bg-red-50 transition-colors">
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <UploadButton
+                              endpoint="imageUploader"
+                              onClientUploadComplete={(res) => {
+                                if (res?.[0]) {
+                                  setFormData({ ...formData, thumbnailUrl: res[0].url });
+                                  toast.success("Thumbnail uploaded!");
+                                }
+                              }}
+                              onUploadError={(error: Error) => toast.error(`Upload failed: ${error.message}`)}
+                              appearance={{ button: "bg-[#0a0a0a] text-white font-bold text-[13px] rounded-lg px-4 py-2", container: "mt-2" }}
+                            />
+                          )}
                         </div>
-                      ))}
+
+                        <div className="p-4 border-2 border-dashed border-black/10 rounded-2xl bg-white text-center">
+                          <h4 className="text-[13px] font-bold text-[#0a0a0a] mb-2">Gallery Images</h4>
+                          {formData.galleryUrls.length > 0 && (
+                            <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
+                              {formData.galleryUrls.map((url: string, i: number) => (
+                                <div key={i} className="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-black/10">
+                                  <img src={url} alt="Gallery" className="w-full h-full object-cover" />
+                                  <button type="button" onClick={() => setFormData({...formData, galleryUrls: formData.galleryUrls.filter((_, idx) => idx !== i)})} className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center text-red-500 shadow-md hover:bg-red-50">
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <UploadButton
+                            endpoint="imageUploader"
+                            onClientUploadComplete={(res) => {
+                              if (res) {
+                                const newUrls = res.map(r => r.url);
+                                setFormData({ ...formData, galleryUrls: [...formData.galleryUrls, ...newUrls] });
+                                toast.success("Gallery images added!");
+                              }
+                            }}
+                            onUploadError={(error: Error) => toast.error(`Upload failed: ${error.message}`)}
+                            appearance={{ button: "bg-[#0a0a0a] text-white font-bold text-[13px] rounded-lg px-4 py-2", container: "mt-2" }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* External Links */}
+                      <div className="space-y-4">
+                        {[
+                          { label: "Project Report (PDF/DOCX Link)", key: "pdfUrl", placeholder: "https://drive.google.com/..." },
+                          { label: "Presentation (PPT Link)", key: "pptUrl", placeholder: "https://drive.google.com/..." },
+                          { label: "Database (SQL Link)", key: "sqlUrl", placeholder: "https://drive.google.com/..." },
+                          { label: "Setup Guide (README Link)", key: "readmeUrl", placeholder: "https://docs.google.com/..." },
+                          { label: "Live Preview (Demo URL)", key: "livePreviewUrl", placeholder: "https://demo.example.com" },
+                        ].map((field, i) => (
+                          <div key={i}>
+                            <label className="block text-[12px] font-bold text-[#0a0a0a] mb-1">{field.label}</label>
+                            <input 
+                              type="url" 
+                              placeholder={field.placeholder} 
+                              value={(formData as any)[field.key]} 
+                              onChange={e => setFormData({...formData, [field.key]: e.target.value})} 
+                              className="w-full bg-white border border-black/10 rounded-xl px-4 py-2 text-[13px] text-[#0a0a0a] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a]" 
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -344,7 +474,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
             </div>
 
             {/* Footer Navigation */}
-            <div className="p-6 border-t border-black/5 flex justify-between bg-[#f5f4ef]/50">
+            <div className="p-6 border-t border-black/5 flex justify-between items-center bg-[#f5f4ef]/50">
               <button 
                 type="button" 
                 onClick={step === 1 ? onClose : prevStep}
@@ -353,14 +483,28 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                 {step === 1 ? "Cancel" : <><ChevronLeft className="w-4 h-4" /> Back</>}
               </button>
 
-              <button 
-                type="submit" 
-                form="project-wizard-form"
-                disabled={isSubmitting}
-                className="px-6 py-3 rounded-xl text-[14px] font-bold text-white bg-[#0a0a0a] hover:bg-neutral-800 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-70"
-              >
-                {step === 6 ? (isSubmitting ? "Publishing..." : "Publish Project") : <>Next Step <ChevronRight className="w-4 h-4" /></>}
-              </button>
+              <div className="flex items-center gap-3">
+                {/* Save This Step button — only shows when editing and not on publish step */}
+                {initialData && step < 6 && (
+                  <button
+                    type="button"
+                    onClick={saveCurrentStep}
+                    disabled={isSubmitting}
+                    className="px-5 py-3 rounded-xl text-[14px] font-bold text-[#0a0a0a] bg-white border border-black/10 hover:bg-black/5 transition-colors flex items-center gap-2 disabled:opacity-70"
+                  >
+                    {isSubmitting ? "Saving..." : "Save This Step"}
+                  </button>
+                )}
+
+                <button 
+                  type="submit" 
+                  form="project-wizard-form"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 rounded-xl text-[14px] font-bold text-white bg-[#0a0a0a] hover:bg-neutral-800 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-70"
+                >
+                  {step === 6 ? (isSubmitting ? "Saving..." : (initialData ? "Save All Changes" : "Publish Project")) : <>Next Step <ChevronRight className="w-4 h-4" /></>}
+                </button>
+              </div>
             </div>
 
           </motion.div>

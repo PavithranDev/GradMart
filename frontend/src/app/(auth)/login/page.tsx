@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth/AuthContext";
+import { RedirectIfAuthenticated } from "@/components/redirect-if-authenticated";
 
 import { Suspense } from "react";
 
@@ -186,8 +187,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
-      <LoginForm />
-    </Suspense>
+    <>
+      <RedirectIfAuthenticated />
+      <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
+        <LoginForm />
+      </Suspense>
+    </>
   );
 }

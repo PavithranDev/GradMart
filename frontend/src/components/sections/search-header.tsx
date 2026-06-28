@@ -1,17 +1,38 @@
 "use client";
 
 import { Search, History, TrendingUp, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function SearchHeader() {
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+
+  useEffect(() => {
+    setQuery(searchParams.get("q") || "");
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    } else {
+      router.push(`/search`);
+    }
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    router.push(`/search`);
+  };
 
   return (
     <section className="px-4 md:px-12 pt-32 pb-10 max-w-7xl mx-auto w-full border-b border-black/5">
       <div className="max-w-4xl mx-auto w-full">
         
         {/* Large Search Input */}
-        <div className="relative group">
+        <form onSubmit={handleSearch} className="relative group">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
             <Search className="h-6 w-6 text-[#0a0a0a]/40 group-focus-within:text-[#6c3bff] transition-colors" />
           </div>
@@ -25,13 +46,14 @@ export function SearchHeader() {
           />
           {query && (
             <button 
-              onClick={() => setQuery("")}
+              type="button"
+              onClick={clearSearch}
               className="absolute inset-y-0 right-6 flex items-center"
             >
               <X className="h-5 w-5 text-[#0a0a0a]/40 hover:text-[#0a0a0a] transition-colors" />
             </button>
           )}
-        </div>
+        </form>
 
         {/* Suggestions & Tags */}
         <div className="mt-8 flex flex-col sm:flex-row gap-8">

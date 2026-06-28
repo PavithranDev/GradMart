@@ -19,7 +19,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-full lg:w-64 flex-shrink-0 lg:border-r border-black/5 bg-white h-auto lg:h-full px-4 py-8 lg:px-6 lg:py-12 flex flex-col justify-between overflow-y-auto">
+    <aside className="w-full lg:w-64 flex-shrink-0 lg:border-r border-black/5 bg-white h-auto lg:h-full px-4 py-8 lg:px-6 lg:py-12 flex flex-col justify-between overflow-y-auto hide-scrollbar" data-lenis-prevent="true">
       <div>
         <div className="flex items-center gap-2 mb-10 px-4">
           <div className="w-8 h-8 bg-[#0a0a0a] rounded-lg flex items-center justify-center">
@@ -35,7 +35,7 @@ export function DashboardSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-3 px-5 py-3 rounded-full text-[14px] font-bold transition-all whitespace-nowrap ${
                   isActive 
                     ? "bg-[#0a0a0a] text-white shadow-md" 
                     : "text-[rgba(10,10,10,0.6)] hover:bg-black/5 hover:text-[#0a0a0a]"

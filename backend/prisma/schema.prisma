@@ -26,6 +26,7 @@ model User {
   sentMessages  Message[]
   withdrawals   Withdrawal[]
   customProjects CustomProjectRequest[]
+  notifications  Notification[]
   
   // Conversations where the user is a participant
   conversationsAsSeller Conversation[] @relation("SellerConversations")
@@ -86,6 +87,7 @@ model Project {
   // File Uploads
   zipUrl          String?
   driveUrl        String?
+  livePreviewUrl  String?
   pdfUrl          String?
   pptUrl          String?
   sqlUrl          String?
@@ -175,9 +177,34 @@ model CustomProjectRequest {
   quotedBudget String?
   deadline    String?
   status      String   @default("SUBMITTED") // SUBMITTED, REVIEW, QUOTED, ASSIGNED, DEVELOPMENT, TESTING, READY, DELIVERED
-  
+
+  // Payment Tracking (Admin decides amounts and timing freely)
+  advanceAmount   Float?   // Admin sets how much advance to collect
+  advancePaid     Boolean  @default(false)
+  advancePaidAt   DateTime?
+  advanceRequested Boolean @default(false) // Admin sent online payment request to student
+  finalAmount     Float?   // Admin sets final/remaining amount
+  finalPaid       Boolean  @default(false)
+  finalPaidAt     DateTime?
+  finalRequested  Boolean  @default(false) // Admin sent online payment request to student
+  paymentNote     String?  // Admin notes (e.g. "Collected via UPI")
+
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  isRead    Boolean  @default(false)
+  link      String?  
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }

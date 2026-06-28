@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { RedirectIfAuthenticated } from "@/components/redirect-if-authenticated";
 
 // ... existing schema ...
 const registerSchema = z.object({
@@ -16,7 +17,6 @@ const registerSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   college: z.string().min(2, "College name is required."),
-  department: z.string().min(2, "Department is required."),
   password: z.string().min(6, "Password must be at least 6 characters."),
   confirmPassword: z.string(),
   terms: z.boolean().refine((val) => val === true, {
@@ -52,8 +52,7 @@ function RegisterForm() {
           email: data.email,
           password: data.password,
           phone: data.phone,
-          college: data.college,
-          department: data.department
+          college: data.college
         })
       });
 
@@ -77,7 +76,7 @@ function RegisterForm() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-lg mx-auto"
     >
-      <div className="mb-8 text-center lg:text-left">
+      <div className="mb-6 text-center lg:text-left">
         <h2 className="text-3xl font-bold text-[#0a0a0a] mb-2">Create Your Account</h2>
         <p className="text-[14px] text-[rgba(10,10,10,0.6)] font-medium">Join GradMart and get access to premium projects.</p>
       </div>
@@ -119,7 +118,7 @@ function RegisterForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 gap-5">
             <div>
               <label className="block text-[13px] font-bold text-[#0a0a0a] mb-1.5">College Name</label>
               <input 
@@ -129,16 +128,6 @@ function RegisterForm() {
                 className={`w-full bg-[#f5f4ef]/50 border ${errors.college ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
               />
               {errors.college && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.college.message}</p>}
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-[#0a0a0a] mb-1.5">Department</label>
-              <input 
-                {...register("department")}
-                type="text" 
-                placeholder="Computer Science" 
-                className={`w-full bg-[#f5f4ef]/50 border ${errors.department ? 'border-red-500' : 'border-black/10'} rounded-xl px-4 py-3 text-[#0a0a0a] text-[14px] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#0a0a0a] transition-all`}
-              />
-              {errors.department && <p className="text-red-500 text-[12px] mt-1.5 font-medium">{errors.department.message}</p>}
             </div>
           </div>
 
@@ -178,13 +167,13 @@ function RegisterForm() {
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full bg-[#0a0a0a] text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-neutral-800 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 mt-4"
+            className="w-full bg-[#0a0a0a] text-white rounded-xl py-3 font-bold text-[14px] hover:bg-neutral-800 transition-all flex items-center justify-center gap-2 mt-3 disabled:opacity-70"
           >
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
           </button>
         </form>
 
-        <button className="mt-4 w-full bg-[#f5f4ef] text-[#0a0a0a] py-3.5 rounded-xl font-bold text-[14px] hover:bg-[#0a0a0a] hover:text-white transition-colors flex items-center justify-center gap-3 group">
+        <button className="mt-3 w-full bg-[#f5f4ef] text-[#0a0a0a] py-3 rounded-xl font-bold text-[14px] hover:bg-[#0a0a0a] hover:text-white transition-colors flex items-center justify-center gap-3 group">
           <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -207,8 +196,11 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
-      <RegisterForm />
-    </Suspense>
+    <>
+      <RedirectIfAuthenticated />
+      <Suspense fallback={<div className="flex items-center justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-black/20" /></div>}>
+        <RegisterForm />
+      </Suspense>
+    </>
   );
 }

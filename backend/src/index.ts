@@ -15,6 +15,8 @@ import sellerRouter from './routes/seller';
 import messagesRouter from './routes/messages';
 import purchasesRouter from './routes/purchases';
 import customProjectsRouter from './routes/custom-projects';
+import notificationsRouter from './routes/notifications';
+import userRouter from './routes/user';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -181,14 +183,14 @@ app.get('/api/user/dashboard', async (req, res) => {
     const projectsBought = user.purchases.length;
     const totalDownloads = user.purchases.reduce((acc, curr) => acc + curr.downloadCount, 0);
 
-    const formattedPurchases = user.purchases.map(p => ({
+    const formattedPurchases = user.purchases.map((p: any) => ({
       id: p.id,
       title: p.project.title,
       category: p.project.category,
       date: p.purchasedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      image: p.project.imageColor,
+      image: p.project.thumbnail || p.project.imageColor,
       driveUrl: p.project.driveUrl,
-      project: p.project // keep the whole project object to access zipUrl, etc if needed on frontend
+      project: p.project
     }));
 
     res.json({
@@ -204,6 +206,72 @@ app.get('/api/user/dashboard', async (req, res) => {
   }
 });
 
+// Admin analytics stats endpoint
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const session = await getSession(req, authConfig);
+    if (!session?.user?.email) return res.status(401).json({ error: 'Unauthorized' });
+    const adminUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!adminUser || adminUser.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalUsers, totalProjects, allPurchases, recentPurchases, categoryData] = await Promise.all([
+      prisma.user.count(),
+      prisma.project.count(),
+      prisma.purchase.findMany({ include: { project: { select: { price: true, category: true, title: true } }, user: { select: { name: true } } }, orderBy: { purchasedAt: 'desc' } }),
+      prisma.purchase.findMany({ include: { project: { select: { price: true, title: true } }, user: { select: { name: true } } }, orderBy: { purchasedAt: 'desc' }, take: 10 }),
+      prisma.project.groupBy({ by: ['category'], _count: { _all: true }, _sum: { sales: true } }),
+    ]);
+
+    const totalRevenue = allPurchases.reduce((sum, p) => sum + (p.project?.price || 0), 0);
+    const totalOrders = allPurchases.length;
+
+    // Revenue by day of week (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentByDay: Record<string, number> = {};
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      recentByDay[days[d.getDay()]] = 0;
+    }
+    allPurchases.forEach(p => {
+      const d = new Date(p.purchasedAt);
+      if (d >= sevenDaysAgo) {
+        const dayName = days[d.getDay()];
+        if (dayName in recentByDay) recentByDay[dayName] += p.project?.price || 0;
+      }
+    });
+    const revenueByDay = Object.entries(recentByDay).map(([name, revenue]) => ({ name, revenue }));
+
+    // Category sales
+    const categorySales = categoryData.map(c => ({ name: c.category || 'Other', sales: c._count._all }));
+
+    // Top projects by purchases
+    const projectPurchaseCounts: Record<string, { title: string; category: string; revenue: number; count: number }> = {};
+    allPurchases.forEach(p => {
+      const pid = (p as any).projectId;
+      if (!projectPurchaseCounts[pid]) {
+        projectPurchaseCounts[pid] = { title: p.project?.title || '', category: (p.project as any)?.category || '', revenue: 0, count: 0 };
+      }
+      projectPurchaseCounts[pid].revenue += p.project?.price || 0;
+      projectPurchaseCounts[pid].count++;
+    });
+    const topProjects = Object.values(projectPurchaseCounts).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+
+    // Recent activity from purchases
+    const activity = recentPurchases.map(p => ({
+      time: new Date(p.purchasedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      event: `${p.user?.name || 'Someone'} purchased '${p.project?.title || 'a project'}'`,
+      type: 'purchase'
+    }));
+
+    res.json({ totalRevenue, totalOrders, totalUsers, totalProjects, revenueByDay, categorySales, topProjects, activity });
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch admin stats' });
+  }
+});
+
 // Register Phase 3 APIs
 app.use('/api/projects', projectsRouter);
 app.use('/api/admin', adminRouter);
@@ -211,6 +279,8 @@ app.use('/api/seller', sellerRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/purchases', purchasesRouter);
 app.use('/api/custom-projects', customProjectsRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/user', userRouter);
 
 // tRPC route handler
 app.use(

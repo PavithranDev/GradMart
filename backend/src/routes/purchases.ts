@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
     const { projectId } = req.body;
     
     // Auth middleware ensures req.user exists
-    const userId = req.user!.id;
+    const userId = (req as any).user.id;
 
     if (!projectId) {
       return res.status(400).json({ error: 'Project ID is required' });

@@ -18,6 +18,11 @@ export default function CustomProjectsCRM() {
   const [activeProject, setActiveProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quoteAmount, setQuoteAmount] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [advanceInput, setAdvanceInput] = useState("");
+  const [finalInput, setFinalInput] = useState("");
+  const [payingType, setPayingType] = useState<"advance"|"final"|null>(null);
+  const [payAmount, setPayAmount] = useState("");
 
   const fetchProjects = async () => {
     try {
@@ -90,6 +95,55 @@ export default function CustomProjectsCRM() {
     } catch (error) {
       console.error("Failed to send quote", error);
       toast.error("Failed to send quote");
+    }
+  };
+
+  const markPayment = async (type: "advance" | "final", amount: string) => {
+    if (!activeProject || !amount) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/payment`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, amount: Number(amount), note: paymentNote }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!data.error) {
+        setActiveProject(data);
+        setProjects(projects.map(p => p.id === data.id ? data : p));
+        setPayingType(null);
+        setPayAmount("");
+        setPaymentNote("");
+        toast.success(`${type === "advance" ? "Advance" : "Final"} payment marked as received! ✅`);
+      } else {
+        toast.error("Failed to update payment");
+      }
+    } catch {
+      toast.error("Failed to update payment");
+    }
+  };
+
+  const requestOnlinePayment = async (type: "advance" | "final", amount: string) => {
+    if (!activeProject || !amount) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/request-payment`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, amount: Number(amount) }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!data.error) {
+        setActiveProject(data);
+        setProjects(projects.map(p => p.id === data.id ? data : p));
+        setPayingType(null);
+        setPayAmount("");
+        toast.success(`Payment request sent to ${activeProject.user?.name}! 🔔 They will see a "Pay Now" button.`);
+      } else {
+        toast.error("Failed to send payment request");
+      }
+    } catch {
+      toast.error("Failed to send payment request");
     }
   };
 
@@ -261,9 +315,9 @@ export default function CustomProjectsCRM() {
               
               {/* OVERVIEW TAB */}
               {activeTab === "overview" && (
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
                   
-                  <div className="xl:col-span-2 space-y-8">
+                  <div className="xl:col-span-3 space-y-8">
                     {/* Custom Request Details */}
                     <div className="bg-white rounded-[24px] border border-black/5 shadow-sm p-6">
                       <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6 flex items-center gap-2">
@@ -303,26 +357,8 @@ export default function CustomProjectsCRM() {
                   </div>
 
                   {/* Right Sidebar in Overview */}
-                  <div className="xl:col-span-1 space-y-8">
-                    {/* Quick Actions */}
-                    <div className="bg-white rounded-[24px] border border-black/5 shadow-sm p-6">
-                      <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6 flex items-center gap-2">
-                        <User className="w-5 h-5 text-[rgba(10,10,10,0.5)]" /> Assign Team
-                      </h3>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider mb-2">Lead Developer</label>
-                          <div className="relative">
-                            <select className="w-full appearance-none bg-[#fcfcfc] border border-black/5 rounded-xl py-2.5 pl-4 pr-10 text-[13px] font-bold text-[#0a0a0a] focus:outline-none focus:border-[#0a0a0a]/20">
-                              <option>Unassigned</option>
-                              <option>Sanjay R.</option>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgba(10,10,10,0.4)] pointer-events-none" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="xl:col-span-2 space-y-6">
+
 
                     {/* Quote Budget */}
                     {(activeProject.status === 'SUBMITTED' || activeProject.status === 'REVIEW' || activeProject.status === 'QUOTED') && (
@@ -330,7 +366,6 @@ export default function CustomProjectsCRM() {
                         <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-6 flex items-center gap-2">
                           <DollarSign className="w-5 h-5 text-[rgba(10,10,10,0.5)]" /> Quote Budget
                         </h3>
-                        
                         <div className="space-y-4">
                           <div>
                             <label className="block text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider mb-2">New Budget Amount (₹)</label>
@@ -346,18 +381,185 @@ export default function CustomProjectsCRM() {
                                 onClick={sendQuote}
                                 className="bg-[#0a0a0a] text-white px-4 py-2.5 rounded-xl font-bold text-[13px] hover:bg-neutral-800 transition-colors whitespace-nowrap"
                               >
-                                Send Quote
+                                Send
                               </button>
                             </div>
                             {activeProject.quotedBudget && (
                               <div className="text-[11px] font-bold text-green-600 mt-2 bg-green-50 p-2 rounded-lg">
-                                Quote of ₹{activeProject.quotedBudget} has been sent. Waiting for user acceptance.
+                                Quote of ₹{activeProject.quotedBudget} sent.
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
                     )}
+
+                    {/* 💰 Payment Tracker — Full Admin Control */}
+                    <div className="bg-white rounded-[24px] border border-black/5 shadow-sm p-6">
+                      <h3 className="text-[16px] font-bold text-[#0a0a0a] mb-1 flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-green-600" /> Payment Tracker
+                      </h3>
+                      <p className="text-[11px] text-[rgba(10,10,10,0.4)] font-medium mb-5">You decide amounts, timing & method.</p>
+
+                      <div className="space-y-4">
+
+                        {/* ── Advance Payment Row ── */}
+                        <div className={`rounded-2xl border overflow-hidden ${activeProject.advancePaid ? 'border-green-200' : 'border-black/8'}`}>
+                          {/* Header */}
+                          <div className={`px-4 pt-4 pb-3 ${activeProject.advancePaid ? 'bg-green-50' : 'bg-[#fcfcfc]'}`}>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="text-[13px] font-bold text-[#0a0a0a]">Advance Payment</p>
+                                {activeProject.advancePaid ? (
+                                  <p className="text-[11px] font-bold text-green-600 mt-0.5">
+                                    ✅ ₹{activeProject.advanceAmount?.toLocaleString('en-IN')} received
+                                    {activeProject.advancePaidAt && (
+                                      <span className="text-[10px] text-green-500 ml-1">· {new Date(activeProject.advancePaidAt).toLocaleDateString()}</span>
+                                    )}
+                                  </p>
+                                ) : activeProject.advanceRequested ? (
+                                  <p className="text-[11px] font-bold text-blue-600 mt-0.5">🔔 ₹{activeProject.advanceAmount?.toLocaleString('en-IN')} — Waiting for student payment</p>
+                                ) : (
+                                  <p className="text-[11px] text-[rgba(10,10,10,0.4)] font-medium mt-0.5">
+                                    {activeProject.advanceAmount ? `₹${activeProject.advanceAmount?.toLocaleString('en-IN')} pending` : "Not set"}
+                                  </p>
+                                )}
+                              </div>
+                              {!activeProject.advancePaid && !activeProject.advanceRequested && (
+                                <button
+                                  onClick={() => setPayingType(payingType === "advance" ? null : "advance")}
+                                  className="text-[11px] font-bold text-[#0a0a0a] bg-black/5 hover:bg-black/10 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                                >
+                                  {payingType === "advance" ? "Cancel" : "+ Collect"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expanded form */}
+                          {payingType === "advance" && !activeProject.advancePaid && !activeProject.advanceRequested && (
+                            <div className="px-4 pb-4 bg-white border-t border-black/5 space-y-3 pt-3">
+                              <input
+                                type="number"
+                                value={payAmount}
+                                onChange={e => setPayAmount(e.target.value)}
+                                placeholder="Enter amount (₹)"
+                                className="w-full bg-[#fcfcfc] border border-black/10 rounded-xl px-3 py-2.5 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-black/20"
+                              />
+                              {/* 2 Options */}
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  onClick={() => { if(payAmount){ setPaymentNote(""); markPayment("advance", payAmount); }}}
+                                  disabled={!payAmount}
+                                  className="flex flex-col items-center gap-1 bg-[#0a0a0a] text-white py-3 rounded-xl text-[12px] font-bold hover:bg-neutral-800 transition-colors disabled:opacity-40"
+                                >
+                                  <span className="text-lg">✏️</span>
+                                  Manual
+                                  <span className="text-[10px] font-medium opacity-70">I received cash/UPI</span>
+                                </button>
+                                <button
+                                  onClick={() => { if(payAmount) requestOnlinePayment("advance", payAmount); }}
+                                  disabled={!payAmount}
+                                  className="flex flex-col items-center gap-1 bg-blue-600 text-white py-3 rounded-xl text-[12px] font-bold hover:bg-blue-700 transition-colors disabled:opacity-40"
+                                >
+                                  <span className="text-lg">🔗</span>
+                                  Request Online
+                                  <span className="text-[10px] font-medium opacity-70">Student pays on platform</span>
+                                </button>
+                              </div>
+                              {/* manual note */}
+                              <input
+                                type="text"
+                                value={paymentNote}
+                                onChange={e => setPaymentNote(e.target.value)}
+                                placeholder="Note (optional): UPI, Cash, NEFT..."
+                                className="w-full bg-[#fcfcfc] border border-black/10 rounded-xl px-3 py-2 text-[12px] focus:outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ── Final Payment Row ── */}
+                        <div className={`rounded-2xl border overflow-hidden ${activeProject.finalPaid ? 'border-green-200' : 'border-black/8'}`}>
+                          <div className={`px-4 pt-4 pb-3 ${activeProject.finalPaid ? 'bg-green-50' : 'bg-[#fcfcfc]'}`}>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="text-[13px] font-bold text-[#0a0a0a]">Final Payment</p>
+                                {activeProject.finalPaid ? (
+                                  <p className="text-[11px] font-bold text-green-600 mt-0.5">
+                                    ✅ ₹{activeProject.finalAmount?.toLocaleString('en-IN')} received
+                                    {activeProject.finalPaidAt && (
+                                      <span className="text-[10px] text-green-500 ml-1">· {new Date(activeProject.finalPaidAt).toLocaleDateString()}</span>
+                                    )}
+                                  </p>
+                                ) : activeProject.finalRequested ? (
+                                  <p className="text-[11px] font-bold text-blue-600 mt-0.5">🔔 ₹{activeProject.finalAmount?.toLocaleString('en-IN')} — Waiting for student payment</p>
+                                ) : (
+                                  <p className="text-[11px] text-[rgba(10,10,10,0.4)] font-medium mt-0.5">
+                                    {activeProject.finalAmount ? `₹${activeProject.finalAmount?.toLocaleString('en-IN')} pending` : "Not set"}
+                                  </p>
+                                )}
+                              </div>
+                              {!activeProject.finalPaid && !activeProject.finalRequested && (
+                                <button
+                                  onClick={() => setPayingType(payingType === "final" ? null : "final")}
+                                  className="text-[11px] font-bold text-[#0a0a0a] bg-black/5 hover:bg-black/10 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                                >
+                                  {payingType === "final" ? "Cancel" : "+ Collect"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {payingType === "final" && !activeProject.finalPaid && !activeProject.finalRequested && (
+                            <div className="px-4 pb-4 bg-white border-t border-black/5 space-y-3 pt-3">
+                              <input
+                                type="number"
+                                value={payAmount}
+                                onChange={e => setPayAmount(e.target.value)}
+                                placeholder="Enter amount (₹)"
+                                className="w-full bg-[#fcfcfc] border border-black/10 rounded-xl px-3 py-2.5 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-black/20"
+                              />
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  onClick={() => { if(payAmount){ setPaymentNote(""); markPayment("final", payAmount); }}}
+                                  disabled={!payAmount}
+                                  className="flex flex-col items-center gap-1 bg-[#0a0a0a] text-white py-3 rounded-xl text-[12px] font-bold hover:bg-neutral-800 transition-colors disabled:opacity-40"
+                                >
+                                  <span className="text-lg">✏️</span>
+                                  Manual
+                                  <span className="text-[10px] font-medium opacity-70">I received cash/UPI</span>
+                                </button>
+                                <button
+                                  onClick={() => { if(payAmount) requestOnlinePayment("final", payAmount); }}
+                                  disabled={!payAmount}
+                                  className="flex flex-col items-center gap-1 bg-blue-600 text-white py-3 rounded-xl text-[12px] font-bold hover:bg-blue-700 transition-colors disabled:opacity-40"
+                                >
+                                  <span className="text-lg">🔗</span>
+                                  Request Online
+                                  <span className="text-[10px] font-medium opacity-70">Student pays on platform</span>
+                                </button>
+                              </div>
+                              <input
+                                type="text"
+                                value={paymentNote}
+                                onChange={e => setPaymentNote(e.target.value)}
+                                placeholder="Note (optional): UPI, Cash, NEFT..."
+                                className="w-full bg-[#fcfcfc] border border-black/10 rounded-xl px-3 py-2 text-[12px] focus:outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Payment Note display */}
+                        {activeProject.paymentNote && (
+                          <div className="text-[11px] font-medium text-[rgba(10,10,10,0.5)] bg-[#f5f4ef] p-3 rounded-xl">
+                            📝 {activeProject.paymentNote}
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

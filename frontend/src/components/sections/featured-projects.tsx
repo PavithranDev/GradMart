@@ -36,7 +36,13 @@ export function FeaturedProjects() {
 
   return (
     <section id="projects" className="flex flex-col items-center">
-      <div className="w-full mb-12 text-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="w-full mb-12 text-center"
+      >
         <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4 text-[#0a0a0a]">
           Explore Our <br/>
           <span className="font-sans font-medium">Featured </span>
@@ -45,7 +51,7 @@ export function FeaturedProjects() {
         <p className="text-[rgba(10,10,10,0.5)] text-[14px] md:text-[15px] max-w-xl mx-auto leading-[1.6]">
           Discover our hand-picked selection of stunning project templates designed to elevate your brand. Each template is crafted for performance and style, paving the way to customize and launch.
         </p>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
         {projects.map((project, index) => (
@@ -90,14 +96,20 @@ export function FeaturedProjects() {
         ))}
       </div>
 
-      <div className="mt-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mt-12"
+      >
         <Link
           href="/projects"
           className="inline-block bg-[#0a0a0a] text-white px-8 py-2.5 rounded-full font-semibold text-[13px] hover:bg-neutral-800 transition-colors shadow-md"
         >
           View All
         </Link>
-      </div>
+      </motion.div>
     </section>
   );
 }

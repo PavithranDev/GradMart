@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Instagram, MessageCircle, Copy, Share2, Image as ImageIcon } from "lucide-react";
+import { Download, MessageCircle, Copy, Share2, Image as ImageIcon } from "lucide-react";
 
 export default function AffiliateMarketingPage() {
   const WHATSAPP_TEMPLATE = `Hey! 🚀 I'm sharing an awesome platform called GradMart where you can buy high-quality Mini & Major projects (with source code & documentation) at student-friendly prices. Use my code RAHUL10X or click this link to check it out: https://gradmart.in/ref/rahul10x`;
@@ -11,6 +11,10 @@ export default function AffiliateMarketingPage() {
     navigator.clipboard.writeText(text);
     alert("Template copied to clipboard!");
   };
+
+  const InstagramIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+  );
 
   return (
     <div className="flex-1 w-full p-6 lg:p-10 overflow-y-auto">
@@ -52,7 +56,7 @@ export default function AffiliateMarketingPage() {
             <div className="bg-white rounded-[24px] border border-black/5 shadow-sm overflow-hidden">
               <div className="bg-gradient-to-r from-[#f09433]/10 via-[#e6683c]/10 to-[#bc1888]/10 p-4 border-b border-pink-500/10 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-[#bc1888] font-bold text-[14px]">
-                  <Instagram className="w-5 h-5" /> Instagram Caption
+                  <InstagramIcon /> Instagram Caption
                 </div>
                 <button 
                   onClick={() => copyToClipboard(INSTA_TEMPLATE)}
