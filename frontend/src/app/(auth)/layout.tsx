@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full lg:w-1/2 flex flex-col items-center p-4 sm:px-8 sm:py-4 overflow-y-auto">
         <div className="w-full max-w-md my-auto">
           {/* Mobile Logo */}
-          <Link href="/" className="flex items-center gap-2 lg:hidden mb-4">
+          <Link href="/" className="flex items-center justify-center gap-2 lg:hidden mb-4">
             <GraduationCap className="w-8 h-8 text-[#0a0a0a]" />
             <span className="text-[24px] font-bold tracking-tight text-[#0a0a0a]">GradMart</span>
           </Link>

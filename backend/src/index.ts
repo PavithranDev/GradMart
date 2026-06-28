@@ -86,7 +86,7 @@ export const authConfig = {
       return session;
     }
   },
-  session: { 
+  session: {
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
@@ -101,7 +101,7 @@ app.use('/api/auth', ExpressAuth(authConfig));
 app.post('/api/register', async (req, res) => {
   try {
     const { fullName, email, password, phone, college, department } = req.body;
-    
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });

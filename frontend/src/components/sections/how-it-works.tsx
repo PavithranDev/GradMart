@@ -41,10 +41,10 @@ export function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-[#0a0a0a] rounded-2xl p-8 relative overflow-hidden min-h-[220px] flex flex-col justify-end"
+            className="group bg-[#0a0a0a] rounded-2xl p-8 relative overflow-hidden min-h-[220px] flex flex-col justify-end cursor-pointer"
           >
             {/* Top Right Serif Number */}
-            <div className="absolute top-4 right-6 text-[80px] font-serif italic text-white/10 leading-none group-hover:text-white/20 transition-colors">
+            <div className="absolute top-4 right-6 text-[80px] font-serif italic text-white/30 leading-none group-hover:text-white/60 transition-colors duration-300">
               {step.number}
             </div>
             
