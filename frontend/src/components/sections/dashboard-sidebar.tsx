@@ -46,6 +46,13 @@ export function DashboardSidebar() {
               </Link>
             );
           })}
+        <button
+            onClick={() => { localStorage.removeItem('gradmart_token'); window.location.href = '/login'; }}
+            className="flex items-center gap-3 px-5 py-3 rounded-full text-[14px] font-bold text-red-600 hover:bg-red-50 transition-all whitespace-nowrap lg:hidden"
+          >
+            <LogOut className="w-5 h-5" />
+            Log Out
+          </button>
         </nav>
       </div>
 
