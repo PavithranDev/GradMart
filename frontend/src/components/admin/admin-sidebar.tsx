@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -144,7 +144,7 @@ export function AdminSidebar() {
         </AnimatePresence>
 
         <button
-          onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/logout`}
+          onClick={() => { localStorage.removeItem('gradmart_token'); window.location.href = '/login'; }}
           title={isCollapsed ? "Logout" : undefined}
           className={`flex items-center w-full px-3 py-2.5 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors ${isCollapsed ? 'justify-center' : 'gap-3'
             }`}

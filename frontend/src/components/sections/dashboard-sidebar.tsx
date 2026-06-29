@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,7 +51,7 @@ export function DashboardSidebar() {
 
       <div className="hidden lg:block">
         <button
-          onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/logout`}
+          onClick={() => { localStorage.removeItem('gradmart_token'); window.location.href = '/login'; }}
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold text-red-600 hover:bg-red-50 transition-colors mt-8 w-full"
         >
           <LogOut className="w-5 h-5" />
