@@ -59,11 +59,18 @@ export function ProjectsGrid() {
             className="group relative flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-black/5 hover:-translate-y-1 cursor-pointer"
             onClick={() => setSelectedProject(project)}
           >
-            {/* Image Placeholder */}
+            {/* Image */}
             <div 
               className="h-[180px] w-full rounded-xl mb-4 relative overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]"
-              style={{ background: project.image }}
+              style={{ background: project.imageColor || project.image || "#e5e5e5" }}
             >
+               {project.thumbnail && (
+                 <img 
+                   src={project.thumbnail} 
+                   alt={project.title} 
+                   className="absolute inset-0 w-full h-full object-cover"
+                 />
+               )}
                {/* Badge */}
                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-widest border border-white/10">
                  {project.price === 0 ? "Free" : "Premium"}
