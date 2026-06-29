@@ -82,12 +82,12 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         slug: formData.slug || generateSlug(formData.title),
         category: formData.category,
         description: formData.description,
-        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags: formData.tags.split(',').map((t: string) => t.trim()).filter(Boolean),
         price: formData.isFree ? 0 : Number(formData.price),
         discount: Number(formData.discount) || 0,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
-        keywords: formData.keywords.split(',').map(t => t.trim()).filter(Boolean),
+        keywords: formData.keywords.split(',').map((t: string) => t.trim()).filter(Boolean),
         status: "Published",
         thumbnail: formData.thumbnailUrl || null,
         gallery: formData.galleryUrls,
@@ -129,12 +129,12 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         slug: formData.slug || generateSlug(formData.title),
         category: formData.category,
         description: formData.description,
-        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags: formData.tags.split(',').map((t: string) => t.trim()).filter(Boolean),
         price: formData.isFree ? 0 : Number(formData.price),
         discount: Number(formData.discount) || 0,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
-        keywords: formData.keywords.split(',').map(t => t.trim()).filter(Boolean),
+        keywords: formData.keywords.split(',').map((t: string) => t.trim()).filter(Boolean),
         status: "Published",
         imageColor: "#" + Math.floor(Math.random()*16777215).toString(16),
         thumbnail: formData.thumbnailUrl || null,
@@ -324,7 +324,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                                   toast.success("Thumbnail uploaded!");
                                 }
                               }}
-                              onUploadError={(error: Error) => toast.error(`Upload failed: ${error.message}`)}
+                              onUploadError={(error: Error) => { toast.error(`Upload failed: ${error.message}`); }}
                               appearance={{ button: "bg-[#0a0a0a] text-white font-bold text-[13px] rounded-lg px-4 py-2", container: "mt-2" }}
                             />
                           )}
@@ -337,7 +337,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                               {formData.galleryUrls.map((url: string, i: number) => (
                                 <div key={i} className="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-black/10">
                                   <img src={url} alt="Gallery" className="w-full h-full object-cover" />
-                                  <button type="button" onClick={() => setFormData({...formData, galleryUrls: formData.galleryUrls.filter((_, idx) => idx !== i)})} className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center text-red-500 shadow-md hover:bg-red-50">
+                                  <button type="button" onClick={() => setFormData({...formData, galleryUrls: formData.galleryUrls.filter((_: string, idx: number) => idx !== i)})} className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center text-red-500 shadow-md hover:bg-red-50">
                                     <X className="w-3 h-3" />
                                   </button>
                                 </div>
@@ -353,7 +353,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                                 toast.success("Gallery images added!");
                               }
                             }}
-                            onUploadError={(error: Error) => toast.error(`Upload failed: ${error.message}`)}
+                            onUploadError={(error: Error) => { toast.error(`Upload failed: ${error.message}`); }}
                             appearance={{ button: "bg-[#0a0a0a] text-white font-bold text-[13px] rounded-lg px-4 py-2", container: "mt-2" }}
                           />
                         </div>
@@ -445,7 +445,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
                       <div className="mb-4">
                         <h4 className="text-[13px] font-bold text-black/50 uppercase tracking-wider mb-1">Tags</h4>
                         <div className="flex flex-wrap gap-2">
-                          {formData.tags.split(',').map((t, i) => t.trim() ? <span key={i} className="px-2 py-1 bg-black/5 rounded-md text-[12px] font-medium">{t.trim()}</span> : null)}
+                          {formData.tags.split(',').map((t: string, i: number) => t.trim() ? <span key={i} className="px-2 py-1 bg-black/5 rounded-md text-[12px] font-medium">{t.trim()}</span> : null)}
                         </div>
                       </div>
 

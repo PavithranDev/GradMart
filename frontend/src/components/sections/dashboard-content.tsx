@@ -12,6 +12,13 @@ type Purchase = {
   category: string;
   date: string;
   image: string;
+  driveUrl?: string;
+  project?: {
+    pdfUrl?: string;
+    pptUrl?: string;
+    sqlUrl?: string;
+    readmeUrl?: string;
+  };
 };
 
 type DashboardData = {
