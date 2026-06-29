@@ -5,6 +5,7 @@ import { X, UploadCloud, Plus, ChevronRight, ChevronLeft, Check } from "lucide-r
 import { useState } from "react";
 import { toast } from "sonner";
 import { UploadButton } from "@/lib/uploadthing";
+import { apiFetch } from "@/lib/api";
 
 interface AddProjectModalProps {
   isOpen: boolean;
@@ -99,11 +100,10 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         readmeUrl: formData.readmeUrl || null,
         livePreviewUrl: formData.livePreviewUrl || null,
       };
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${initialData.id}`, {
+      const res = await apiFetch(`/api/admin/project/${initialData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: "include"
       });
       if (!res.ok) throw new Error();
       toast.success("Step saved!");
@@ -149,16 +149,15 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
       };
 
       const url = initialData 
-        ? `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${initialData.id}` 
-        : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project`;
+        ? `/api/admin/project/${initialData.id}` 
+        : `/api/admin/project`;
         
       const method = initialData ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: "include"
       });
 
       if (!res.ok) throw new Error("Failed to save project");

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, LayoutGrid, List, Edit2, Trash2, Eye, Loader2 } from "lucide-react";
 import { AddProjectModal } from "@/components/admin/add-project-modal";
+import { apiFetch } from "@/lib/api";
 
 const MOCK_PROJECTS = [
   { id: 1, title: "AI Smart Attendance", category: "AI & ML", tech: "React, Python", price: "₹499", status: "Published", sales: 124, image: "#8b5cf6" },
@@ -20,7 +21,7 @@ export default function AdminProjectsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchProjects = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/projects`, { credentials: "include" })
+    apiFetch(`/api/admin/projects`)
       .then(res => res.json())
       .then(data => {
         setProjects(Array.isArray(data) ? data : []);
@@ -39,7 +40,7 @@ export default function AdminProjectsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${id}`, { method: 'DELETE' });
+      await apiFetch(`/api/admin/project/${id}`, { method: 'DELETE' });
       fetchProjects(); // refresh list
     } catch (err) {
       console.error(err);

@@ -1,4 +1,6 @@
-"use client";
+﻿"use client";
+
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { Search, Send, MessageSquare, HeadphonesIcon, HelpCircle, User, Loader2 } from "lucide-react";
@@ -50,8 +52,7 @@ export default function SellerMessagesPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/messages/${activeChat.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: replyText }),
-        credentials: "include"
+        body: JSON.stringify({ content: replyText })
       });
 
       if (res.ok) {

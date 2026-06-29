@@ -1,4 +1,6 @@
-"use client";
+﻿"use client";
+
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { NumberTicker } from "@/components/ui/number-ticker";

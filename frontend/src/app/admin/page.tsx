@@ -20,6 +20,7 @@ import {
   BarChart,
   Bar
 } from "recharts";
+import { apiFetch } from "@/lib/api";
 
 interface AdminStats {
   totalRevenue: number;
@@ -37,7 +38,7 @@ export default function AdminAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/stats`, { credentials: "include" })
+    apiFetch(`/api/admin/stats`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) setStats(data);

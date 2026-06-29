@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PaymentSuccessOverlay } from "../ui/payment-success-overlay";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 const PAYMENT_METHODS = [
   { id: "razorpay", name: "Razorpay" },
@@ -25,12 +26,9 @@ export function CheckoutForm({ project }: { project: any }) {
     setIsProcessing(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/purchases`, {
+      const res = await apiFetch(`/api/purchases`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: project.id }),
       });
 

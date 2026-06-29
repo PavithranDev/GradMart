@@ -1,4 +1,6 @@
-"use client";
+﻿"use client";
+
+import { apiFetch } from "@/lib/api";
 
 import { CheckCircle2, ShieldCheck, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";

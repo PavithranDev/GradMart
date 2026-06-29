@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Download, Crown, FolderDot, ArrowUpRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 type Purchase = {
   id: string;
@@ -38,9 +39,7 @@ export function DashboardContent() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/dashboard`, {
-        credentials: "include",
-      })
+      apiFetch(`/api/user/dashboard`)
         .then((res) => res.json())
         .then((data) => {
           if (data.error) {

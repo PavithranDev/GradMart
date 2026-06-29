@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Wallet, CheckCircle2, Clock, Landmark, Smartphone, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 export default function WithdrawalsPage() {
   const [withdrawalMethod, setWithdrawalMethod] = useState("bank");
@@ -61,8 +62,7 @@ export default function WithdrawalsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/seller/withdrawals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: numAmount }),
-        credentials: "include"
+        body: JSON.stringify({ amount: numAmount })
       });
 
       if (!res.ok) {

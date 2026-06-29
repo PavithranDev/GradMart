@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 interface RequestProjectModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ export function RequestProjectModal({ isOpen, onClose, onSuccess }: RequestProje
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to submit request");

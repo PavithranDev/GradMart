@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 
 type NotificationType = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
@@ -81,7 +82,6 @@ export default function NotificationsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
-        credentials: "include",
       });
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     } catch (error) {

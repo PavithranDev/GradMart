@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { RequestProjectModal } from "@/components/request-project-modal";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 const TIMELINE_STEPS = [
   { id: 'SUBMITTED', label: 'Request Submitted', icon: FileText },

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { 
@@ -7,6 +7,7 @@ import {
   Plus, MoreHorizontal, CheckCircle2, MessageSquare, Send, Mail, Phone
 } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 const PIPELINE_STAGES = [
   "SUBMITTED", "REVIEW", "QUOTED", "ASSIGNED", "DEVELOPMENT", "TESTING", "READY", "DELIVERED"
@@ -55,7 +56,6 @@ export default function CustomProjectsCRM() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
-        credentials: "include",
       });
       
       const data = await res.json();
@@ -80,7 +80,6 @@ export default function CustomProjectsCRM() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quotedBudget: quoteAmount }),
-        credentials: "include",
       });
       
       const data = await res.json();
@@ -105,7 +104,6 @@ export default function CustomProjectsCRM() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, amount: Number(amount), note: paymentNote }),
-        credentials: "include",
       });
       const data = await res.json();
       if (!data.error) {
@@ -130,7 +128,6 @@ export default function CustomProjectsCRM() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, amount: Number(amount) }),
-        credentials: "include",
       });
       const data = await res.json();
       if (!data.error) {

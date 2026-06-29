@@ -1,4 +1,6 @@
-"use client";
+﻿"use client";
+
+import { apiFetch } from "@/lib/api";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";

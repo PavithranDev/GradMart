@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Camera, ShieldCheck, Bell, Trash2, Save, KeyRound } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api";
 
 interface UserProfile {
   id: string;
@@ -91,7 +92,6 @@ export default function ProfilePage() {
           college: profile.college,
           department: profile.department,
         }),
-        credentials: "include",
       });
       if (res.ok) {
         toast.success("Profile updated successfully!");
@@ -117,7 +117,6 @@ export default function ProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(passwords),
-        credentials: "include",
       });
       const data = await res.json();
       
