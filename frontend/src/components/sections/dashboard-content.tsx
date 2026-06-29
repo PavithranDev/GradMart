@@ -162,16 +162,16 @@ export function DashboardContent() {
                   {(project.project?.pdfUrl || project.project?.pptUrl || project.project?.sqlUrl || project.project?.readmeUrl) && (
                     <div className="grid grid-cols-2 gap-2 mt-1">
                       {project.project?.pdfUrl && (
-                        <button onClick={() => window.open(project.project.pdfUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PDF</button>
+                        <button onClick={() => window.open(project.project?.pdfUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PDF</button>
                       )}
                       {project.project?.pptUrl && (
-                        <button onClick={() => window.open(project.project.pptUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PPT</button>
+                        <button onClick={() => window.open(project.project?.pptUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> PPT</button>
                       )}
                       {project.project?.sqlUrl && (
-                        <button onClick={() => window.open(project.project.sqlUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> SQL DB</button>
+                        <button onClick={() => window.open(project.project?.sqlUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> SQL DB</button>
                       )}
                       {project.project?.readmeUrl && (
-                        <button onClick={() => window.open(project.project.readmeUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> Guide</button>
+                        <button onClick={() => window.open(project.project?.readmeUrl, '_blank')} className="bg-[#f5f4ef] text-[#0a0a0a] py-2 rounded-lg font-bold text-[12px] hover:bg-black/10 transition-colors flex items-center justify-center gap-1.5"><Download className="w-3.5 h-3.5" /> Guide</button>
                       )}
                     </div>
                   )}
