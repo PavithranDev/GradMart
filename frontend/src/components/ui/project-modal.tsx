@@ -43,8 +43,15 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
               {/* Header Image */}
               <div 
                 className="w-full h-[250px] sm:h-[300px] relative"
-                style={{ background: project.image }}
+                style={{ background: project.imageColor || project.image || "#6c3bff" }}
               >
+                {project.thumbnail && (
+                  <img 
+                    src={project.thumbnail} 
+                    alt={project.title} 
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <div className="flex items-center gap-2 mb-2">

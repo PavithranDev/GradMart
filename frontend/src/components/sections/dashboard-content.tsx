@@ -38,23 +38,26 @@ export function DashboardContent() {
   const userName = session?.user?.name || "User";
 
   useEffect(() => {
-    if (status === "authenticated") {
-      apiFetch(`/api/user/dashboard`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) {
-            console.error(data.error);
-            setData(null);
-          } else {
-            setData(data);
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch dashboard data", err);
-          setLoading(false);
-        });
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      setLoading(false);
+      return;
     }
+    apiFetch(`/api/user/dashboard`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          console.error(data.error);
+          setData(null);
+        } else {
+          setData(data);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch dashboard data", err);
+        setLoading(false);
+      });
   }, [status]);
 
   if (loading || status === "loading") {
@@ -135,10 +138,12 @@ export function DashboardContent() {
             >
               <div 
                 className="w-full h-40 relative"
-                style={!project.image?.startsWith('http') ? { background: project.image || "#6c3bff" } : {}}
+                style={{ background: (project.image && !project.image.startsWith('http')) ? project.image : "#e5e5e5" }}
               >
-                {project.image?.startsWith('http') && <img src={project.image} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />}
-                <div className="absolute inset-0 bg-black/20" />
+                {project.image?.startsWith('http') && (
+                  <img src={project.image} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-black/10" />
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <div className="text-[12px] font-bold text-[rgba(10,10,10,0.5)] uppercase tracking-wider mb-2">
