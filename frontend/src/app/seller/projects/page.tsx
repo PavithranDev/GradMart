@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Eye, Download, Edit2, Trash2, PowerOff } from "lucide-react";
+import { Plus, Eye, Download, Edit2, Trash2, PowerOff, FolderGit2 } from "lucide-react";
 import { UploadProjectModal } from "@/components/seller/upload-project-modal";
 
 const TABS = ["All", "Draft", "Pending Approval", "Published", "Rejected", "Archived"];

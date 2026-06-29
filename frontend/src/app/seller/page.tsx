@@ -83,9 +83,9 @@ export default function SellerDashboardPage() {
             <div className="text-[28px] font-bold text-[#0a0a0a] tracking-tight flex items-baseline">
               {stat.prefix}
               {stat.isFloat ? (
-                <span>{stat.value}{stat.suffix}</span>
+                <span>{stat.value}{(stat as any).suffix}</span>
               ) : (
-                <><NumberTicker value={stat.value} delay={0.2} />{stat.suffix}</>
+                <><NumberTicker value={stat.value} delay={0.2} />{(stat as any).suffix}</>
               )}
             </div>
           </div>
