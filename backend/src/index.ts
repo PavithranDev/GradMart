@@ -96,6 +96,21 @@ export const authConfig = {
   },
   secret: process.env.AUTH_SECRET || 'secret123',
   trustHost: true,
+  useSecureCookies: true,
+  cookies: {
+    sessionToken: {
+      name: `__Secure-authjs.session-token`,
+      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
+    },
+    callbackUrl: {
+      name: `__Secure-authjs.callback-url`,
+      options: { sameSite: 'none', path: '/', secure: true },
+    },
+    csrfToken: {
+      name: `__Host-authjs.csrf-token`,
+      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
+    },
+  },
 };
 
 // NextAuth route handler for Express
