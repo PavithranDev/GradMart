@@ -77,13 +77,13 @@ export const authConfig = {
     })
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user }: any) {
       if (user) {
         token.role = (user as any).role;
       }
       return token;
     },
-    session({ session, token }) {
+    session({ session, token }: any) {
       if (token && session.user) {
         (session.user as any).role = token.role;
       }

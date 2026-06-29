@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
         // In-memory filter for tech stack if provided, because Prisma SQLite/Postgres array filtering can be inconsistent across versions
         if (tech && typeof tech === 'string') {
             const techs = tech.split(',').map(t => t.toLowerCase().trim());
-            projects = projects.filter(p => p.techStack.some(t => techs.includes(t.toLowerCase().trim())));
+            projects = projects.filter(p => p.techStack?.some((t) => techs.includes(t.toLowerCase().trim())));
         }
         res.json(projects);
     }

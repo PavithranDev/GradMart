@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
     if (tech && typeof tech === 'string') {
       const techs = tech.split(',').map(t => t.toLowerCase().trim());
       projects = projects.filter(p => 
-        p.techStack.some(t => techs.includes(t.toLowerCase().trim()))
+        (p as any).techStack?.some((t: any) => techs.includes(t.toLowerCase().trim()))
       );
     }
     

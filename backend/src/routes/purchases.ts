@@ -123,7 +123,7 @@ router.get('/check/:projectId', async (req, res) => {
 // Get all purchases for the logged-in user
 router.get('/me', async (req, res) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user!.id;
 
     const purchases = await prisma.purchase.findMany({
       where: { userId },
