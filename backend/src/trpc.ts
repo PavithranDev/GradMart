@@ -1,25 +1,32 @@
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { getSession } from '@auth/express';
+import jwt from 'jsonwebtoken';
 import { prisma } from './db.js';
+
+const JWT_SECRET = process.env.AUTH_SECRET || 'secret123';
 
 // The context for each request
 export const createContext = async ({
   req,
   res,
 }: trpcExpress.CreateExpressContextOptions) => {
-  // Try to get Auth.js session from request
-  // NOTE: Requires @auth/express middleware to be set up correctly
-  const session = await getSession(req, {
-    // We pass req to Auth.js, we also need to provide authConfig if using custom setup.
-    // For basic usage, standard req might be enough depending on auth config.
-  } as any);
+  // Try to get user from JWT Bearer token
+  let user: any = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.split(' ')[1];
+      user = jwt.verify(token, JWT_SECRET);
+    } catch {
+      user = null;
+    }
+  }
 
   return {
     req,
     res,
     prisma,
-    session,
+    user,
   };
 };
 
@@ -32,12 +39,12 @@ export const publicProcedure = t.procedure;
 
 // Protected procedure that throws if not authenticated
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.user) {
     throw new Error('UNAUTHORIZED');
   }
   return next({
     ctx: {
-      session: { ...ctx.session, user: ctx.session.user },
+      user: ctx.user,
     },
   });
 });

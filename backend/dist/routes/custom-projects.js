@@ -1,23 +1,9 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 const router = express.Router();
 // Middleware to check if user is logged in
-router.use(async (req, res, next) => {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-    });
-    if (!dbUser) {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
-    req.user = dbUser;
-    next();
-});
+router.use(requireAuth);
 // GET /api/custom-projects - Get all requests for the logged in user
 router.get('/', async (req, res) => {
     try {

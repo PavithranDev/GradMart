@@ -37,68 +37,36 @@ function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      // 1. Get CSRF Token
-      const csrfRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/auth/csrf`, {
-        credentials: "include",
-      });
-      const { csrfToken } = await csrfRes.json();
-
-      // 2. Perform Login
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/auth/callback/credentials`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-Auth-Return-Redirect": "1",
-        },
-        credentials: "include",
-        body: new URLSearchParams({
-          csrfToken,
-          email: data.email,
-          password: data.password,
-          redirect: "false",
-        }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email, password: data.password }),
       });
 
       const result = await res.json();
-      
-      if (result.url && result.url.includes("error=")) {
-        const urlObj = new URL(result.url);
-        const errorMsg = urlObj.searchParams.get("error");
-        
-        if (errorMsg === "CredentialsSignin" || errorMsg === "Configuration") {
-          toast.error("Invalid email or password");
-        } else {
-          toast.error(`Login failed: ${errorMsg}`);
-        }
+
+      if (!res.ok) {
+        toast.error(result.error || 'Invalid email or password');
         return;
       }
 
-      // 3. Wait a tick for cookie to be set, then fetch role
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/me`, {
-        credentials: "include",
-      });
+      // Store JWT token in localStorage
+      localStorage.setItem('gradmart_token', result.token);
 
       await updateSession();
 
-      if (userRes.ok) {
-        const user = await userRes.json();
-        toast.success(`Welcome back, ${user.name || "User"}!`);
-        if (user.role === "ADMIN") {
-          window.location.href = "/admin";
-        } else if (user.role === "SELLER") {
-          window.location.href = "/seller";
-        } else {
-          window.location.href = redirectUrl;
-        }
+      toast.success(`Welcome back, ${result.user.name || 'User'}!`);
+
+      if (result.user.role === 'ADMIN') {
+        window.location.href = '/admin';
+      } else if (result.user.role === 'SELLER') {
+        window.location.href = '/seller';
       } else {
-        toast.success("Welcome back!");
         window.location.href = redirectUrl;
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to connect to the server");
+      toast.error('Failed to connect to the server');
     }
   };
 

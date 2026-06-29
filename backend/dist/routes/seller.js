@@ -1,21 +1,12 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 const router = express.Router();
-// Middleware to check if user is logged in
-router.use(async (req, res, next) => {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-    });
-    if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SELLER')) {
+// Middleware: SELLER or ADMIN only
+router.use(requireAuth, (req, res, next) => {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SELLER') {
         return res.status(403).json({ error: 'Forbidden. Sellers only.' });
     }
-    req.user = dbUser;
     next();
 });
 // GET /api/seller/dashboard - Get seller stats

@@ -1,25 +1,10 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 
 const router = express.Router();
 
-router.use(async (req, res, next) => {
-  const session = await getSession(req, authConfig);
-  if (!session?.user?.email) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
-
-  if (!dbUser) return res.status(401).json({ error: 'Unauthorized' });
-
-  (req as any).user = dbUser;
-  next();
-});
+router.use(requireAuth);
 
 // GET /api/messages - Fetch all conversations for logged in user
 router.get('/', async (req, res) => {

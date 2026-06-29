@@ -1,22 +1,12 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 const router = express.Router();
-// Middleware to check if user is logged in
-router.use(async (req, res, next) => {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-    });
-    if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SELLER')) {
+// Middleware: must be ADMIN or SELLER
+router.use(requireAuth, (req, res, next) => {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'SELLER') {
         return res.status(403).json({ error: 'Forbidden' });
     }
-    // Attach user to req for later routes
-    req.user = dbUser;
     next();
 });
 // GET /api/admin/projects - Get projects for the admin table

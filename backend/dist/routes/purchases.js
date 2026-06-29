@@ -1,23 +1,9 @@
 import express from 'express';
 import { prisma } from '../db.js';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 const router = express.Router();
 // Middleware to check if user is logged in
-router.use(async (req, res, next) => {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-    });
-    if (!dbUser) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    req.user = dbUser;
-    next();
-});
+router.use(requireAuth);
 // POST /api/purchases
 // Create a new purchase
 router.post('/', async (req, res) => {
@@ -71,27 +57,17 @@ router.post('/', async (req, res) => {
 });
 // GET /api/purchases/check/:projectId
 // Check if logged-in user has purchased a specific project
-router.get('/check/:projectId', async (req, res) => {
+router.get('/check/:projectId', requireAuth, async (req, res) => {
     try {
         const { projectId } = req.params;
         let hasPurchased = false;
-        const session = await getSession(req, authConfig);
-        if (session?.user?.email) {
-            const user = await prisma.user.findUnique({
-                where: { email: session.user.email },
-                select: { id: true }
+        const user = req.user;
+        if (user?.id) {
+            const purchase = await prisma.purchase.findFirst({
+                where: { userId: user.id, projectId }
             });
-            if (user) {
-                const purchase = await prisma.purchase.findFirst({
-                    where: {
-                        userId: user.id,
-                        projectId,
-                    }
-                });
-                if (purchase) {
-                    hasPurchased = true;
-                }
-            }
+            if (purchase)
+                hasPurchased = true;
         }
         res.json({ hasPurchased });
     }

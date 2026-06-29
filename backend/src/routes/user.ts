@@ -1,22 +1,16 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // GET /api/user/profile - Get full user profile
-router.get('/profile', async (req, res) => {
+router.get('/profile', requireAuth, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session || !session.user || !session.user.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: req.user.id },
       select: {
         id: true,
         name: true,
@@ -27,7 +21,6 @@ router.get('/profile', async (req, res) => {
         image: true,
       }
     });
-
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (error) {
@@ -37,33 +30,14 @@ router.get('/profile', async (req, res) => {
 });
 
 // PUT /api/user/profile - Update user profile
-router.put('/profile', async (req, res) => {
+router.put('/profile', requireAuth, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session || !session.user || !session.user.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const { name, phone, college, department } = req.body;
-
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        name,
-        phone,
-        college,
-        department,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        college: true,
-        department: true,
-      }
+      where: { id: req.user.id },
+      data: { name, phone, college, department },
+      select: { id: true, name: true, email: true, phone: true, college: true, department: true }
     });
-
     res.json(updatedUser);
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -72,38 +46,22 @@ router.put('/profile', async (req, res) => {
 });
 
 // PUT /api/user/password - Update user password
-router.put('/password', async (req, res) => {
+router.put('/password', requireAuth, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session || !session.user || !session.user.id) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Missing password fields' });
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
-
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user || !user.password) {
       return res.status(400).json({ error: 'Cannot update password for this account' });
     }
-
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ error: 'Incorrect current password' });
     }
-
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { password: hashedPassword }
-    });
-
+    await prisma.user.update({ where: { id: req.user.id }, data: { password: hashedPassword } });
     res.json({ success: true });
   } catch (error) {
     console.error('Error updating password:', error);

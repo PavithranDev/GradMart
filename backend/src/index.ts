@@ -1,13 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { ExpressAuth, getSession } from '@auth/express';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import CredentialsProvider from '@auth/express/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db.js';
 import { appRouter } from './routers/index.js';
 import { createContext } from './trpc.js';
+import { requireAuth, requireAdmin, signToken } from './auth-middleware.js';
 
 import projectsRouter from './routes/projects.js';
 import adminRouter from './routes/admin.js';
@@ -19,8 +17,6 @@ import notificationsRouter from './routes/notifications.js';
 import userRouter from './routes/user.js';
 
 const app = express();
-app.set('trust proxy', 1);
-process.env.AUTH_URL = 'https://grad-mart.duckdns.org/api/auth';
 const port = process.env.PORT || 4000;
 
 app.use(cors({
@@ -34,88 +30,30 @@ app.use(cors({
 
 app.use(express.json());
 
-// Auth.js config
-export const authConfig = {
-  adapter: PrismaAdapter(prisma),
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
-        }
+// ── JWT Login endpoint ──────────────────────────────────────────
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email as string
-          }
-        });
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.password) return res.status(401).json({ error: 'Invalid email or password' });
 
-        if (!user || !user.password) {
-          throw new Error('User not found');
-        }
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+    const token = signToken({ id: user.id, email: user.email!, name: user.name || '', role: user.role! });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
 
-        if (!isPasswordValid) {
-          throw new Error('Invalid password');
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        };
-      }
-    })
-  ],
-  callbacks: {
-    jwt({ token, user }: any) {
-      if (user) {
-        token.role = (user as any).role;
-      }
-      return token;
-    },
-    session({ session, token }: any) {
-      if (token && session.user) {
-        (session.user as any).role = token.role;
-      }
-      return session;
-    }
-  },
-  session: {
-    strategy: 'jwt' as const,
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  secret: process.env.AUTH_SECRET || 'secret123',
-  trustHost: true,
-  cookies: {
-    sessionToken: {
-      name: `authjs.session-token`,
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-    callbackUrl: {
-      name: `authjs.callback-url`,
-      options: { sameSite: 'none', path: '/', secure: true },
-    },
-    csrfToken: {
-      name: `authjs.csrf-token`,
-      options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
-    },
-  },
-};
-
-// NextAuth route handler for Express
-app.use('/api/auth', ExpressAuth(authConfig));
+// ── Session check endpoint (for AuthContext) ─────────────────────
+app.get('/api/auth/session', requireAuth, (req: any, res) => {
+  res.json({ user: req.user });
+});
 
 // Registration endpoint (Alternative to tRPC for simple fetch)
 app.post('/api/register', async (req, res) => {
@@ -147,26 +85,16 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Logout - clears cookie and redirects to frontend login
-app.get('/api/logout', (req, res) => {
-  // Clear all possible auth cookie variants
-  res.clearCookie('authjs.session-token', { path: '/' });
-  res.clearCookie('__Secure-authjs.session-token', { path: '/' });
-  res.clearCookie('authjs.csrf-token', { path: '/' });
-  res.clearCookie('authjs.callback-url', { path: '/' });
-  const frontendUrl = process.env.FRONTEND_URL || 'https://grad-mart.vercel.app';
-  res.redirect(`${frontendUrl}/login`);
+// Logout (client-side: just delete the token from localStorage)
+app.post('/api/logout', (req, res) => {
+  res.json({ success: true });
 });
 
 // Get current user info (role, name, etc)
-app.get('/api/user/me', async (req, res) => {
+app.get('/api/user/me', requireAuth, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: req.user.id },
       select: { id: true, email: true, name: true, role: true }
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -178,15 +106,10 @@ app.get('/api/user/me', async (req, res) => {
 });
 
 // Dashboard stats endpoint
-app.get('/api/user/dashboard', async (req, res) => {
+app.get('/api/user/dashboard', requireAuth, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: req.user.id },
       include: {
         purchases: {
           include: {
@@ -228,12 +151,8 @@ app.get('/api/user/dashboard', async (req, res) => {
 });
 
 // Admin analytics stats endpoint
-app.get('/api/admin/stats', async (req, res) => {
+app.get('/api/admin/stats', requireAdmin, async (req: any, res) => {
   try {
-    const session = await getSession(req, authConfig);
-    if (!session?.user?.email) return res.status(401).json({ error: 'Unauthorized' });
-    const adminUser = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!adminUser || adminUser.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
 
     const [totalUsers, totalProjects, allPurchases, recentPurchases, categoryData] = await Promise.all([
       prisma.user.count(),

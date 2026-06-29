@@ -17,9 +17,11 @@
     "@auth/prisma-adapter": "^2.11.2",
     "@prisma/client": "^5.22.0",
     "@trpc/server": "^11.17.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.21.0",
     "zod": "^4.4.3"
   },

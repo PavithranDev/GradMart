@@ -1,20 +1,15 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import { getSession } from '@auth/express';
-import { authConfig } from '../index.js';
+import { requireAuth } from '../auth-middleware.js';
 const router = express.Router();
 const prisma = new PrismaClient();
 // GET /api/notifications - Get all notifications for the authenticated user
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
     try {
-        const session = await getSession(req, authConfig);
-        if (!session || !session.user || !session.user.id) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
         const notifications = await prisma.notification.findMany({
-            where: { userId: session.user.id },
+            where: { userId: req.user.id },
             orderBy: { createdAt: 'desc' },
-            take: 50, // Limit to recent 50
+            take: 50,
         });
         res.json(notifications);
     }
@@ -24,22 +19,18 @@ router.get('/', async (req, res) => {
     }
 });
 // PUT /api/notifications/mark-read - Mark notifications as read
-router.put('/mark-read', async (req, res) => {
+router.put('/mark-read', requireAuth, async (req, res) => {
     try {
-        const session = await getSession(req, authConfig);
-        if (!session || !session.user || !session.user.id) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-        const { id } = req.body; // if id is provided, mark specific; else all
+        const { id } = req.body;
         if (id) {
             await prisma.notification.update({
-                where: { id, userId: session.user.id },
+                where: { id, userId: req.user.id },
                 data: { isRead: true },
             });
         }
         else {
             await prisma.notification.updateMany({
-                where: { userId: session.user.id, isRead: false },
+                where: { userId: req.user.id, isRead: false },
                 data: { isRead: true },
             });
         }
