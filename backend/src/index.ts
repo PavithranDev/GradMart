@@ -22,7 +22,11 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 app.use(cors({
-  origin: ['http://localhost:3000'], // Next.js frontend
+  origin: [
+    'http://localhost:3000', // Next.js frontend
+    'https://grad-mart.vercel.app',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+  ],
   credentials: true,
 }));
 
@@ -134,7 +138,8 @@ app.get('/api/logout', (req, res) => {
   res.clearCookie('__Secure-authjs.session-token', { path: '/' });
   res.clearCookie('authjs.csrf-token', { path: '/' });
   res.clearCookie('authjs.callback-url', { path: '/' });
-  res.redirect('http://localhost:3000/login');
+  const frontendUrl = process.env.FRONTEND_URL || 'https://grad-mart.vercel.app';
+  res.redirect(`${frontendUrl}/login`);
 });
 
 // Get current user info (role, name, etc)
