@@ -19,6 +19,8 @@ import notificationsRouter from './routes/notifications.js';
 import userRouter from './routes/user.js';
 
 const app = express();
+app.set('trust proxy', 1);
+process.env.AUTH_URL = 'https://grad-mart.duckdns.org/api/auth';
 const port = process.env.PORT || 4000;
 
 app.use(cors({
@@ -96,18 +98,17 @@ export const authConfig = {
   },
   secret: process.env.AUTH_SECRET || 'secret123',
   trustHost: true,
-  useSecureCookies: true,
   cookies: {
     sessionToken: {
-      name: `__Secure-authjs.session-token`,
+      name: `authjs.session-token`,
       options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
     },
     callbackUrl: {
-      name: `__Secure-authjs.callback-url`,
+      name: `authjs.callback-url`,
       options: { sameSite: 'none', path: '/', secure: true },
     },
     csrfToken: {
-      name: `__Host-authjs.csrf-token`,
+      name: `authjs.csrf-token`,
       options: { httpOnly: true, sameSite: 'none', path: '/', secure: true },
     },
   },
