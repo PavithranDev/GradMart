@@ -1,7 +1,7 @@
 import express from 'express';
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 import { getSession } from '@auth/express';
-import { authConfig } from '../index';
+import { authConfig } from '../index.js';
 const router = express.Router();
 // Middleware to check if user is logged in
 router.use(async (req, res, next) => {
@@ -108,6 +108,145 @@ router.delete('/project/:id', async (req, res) => {
     catch (error) {
         console.error('Error deleting project:', error);
         res.status(500).json({ error: 'Failed to delete project' });
+    }
+});
+// GET /api/admin/custom-projects - Get all custom project requests
+router.get('/custom-projects', async (req, res) => {
+    try {
+        const projects = await prisma.customProjectRequest.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: { name: true, email: true, phone: true }
+                }
+            }
+        });
+        res.json(projects);
+    }
+    catch (error) {
+        console.error('Error fetching custom projects for admin:', error);
+        res.status(500).json({ error: 'Failed to fetch custom projects' });
+    }
+});
+// PUT /api/admin/custom-projects/:id/status - Update custom project status
+router.put('/custom-projects/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const project = await prisma.customProjectRequest.update({
+            where: { id },
+            data: { status },
+            include: {
+                user: {
+                    select: { name: true, email: true, phone: true }
+                }
+            }
+        });
+        res.json(project);
+    }
+    catch (error) {
+        console.error('Error updating custom project status:', error);
+        res.status(500).json({ error: 'Failed to update custom project status' });
+    }
+});
+// PUT /api/admin/custom-projects/:id/quote - Admin sends a budget quote
+router.put('/custom-projects/:id/quote', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quotedBudget } = req.body;
+        const project = await prisma.customProjectRequest.update({
+            where: { id },
+            data: {
+                quotedBudget,
+                status: 'QUOTED'
+            },
+            include: {
+                user: {
+                    select: { name: true, email: true, phone: true }
+                }
+            }
+        });
+        res.json(project);
+    }
+    catch (error) {
+        console.error('Error updating custom project quote:', error);
+        res.status(500).json({ error: 'Failed to update custom project quote' });
+    }
+});
+// PUT /api/admin/custom-projects/:id/payment - Admin marks payment received
+router.put('/custom-projects/:id/payment', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, amount, note } = req.body;
+        // type: 'advance' | 'final'
+        let data = { paymentNote: note };
+        if (type === 'advance') {
+            data.advanceAmount = Number(amount);
+            data.advancePaid = true;
+            data.advancePaidAt = new Date();
+        }
+        else if (type === 'final') {
+            data.finalAmount = Number(amount);
+            data.finalPaid = true;
+            data.finalPaidAt = new Date();
+        }
+        const project = await prisma.customProjectRequest.update({
+            where: { id },
+            data,
+            include: { user: { select: { name: true, email: true, phone: true } } }
+        });
+        res.json(project);
+    }
+    catch (error) {
+        console.error('Error updating payment:', error);
+        res.status(500).json({ error: 'Failed to update payment' });
+    }
+});
+// PUT /api/admin/custom-projects/:id/request-payment - Admin requests online payment from student
+router.put('/custom-projects/:id/request-payment', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type, amount } = req.body;
+        // type: 'advance' | 'final'
+        const data = {};
+        if (type === 'advance') {
+            data.advanceAmount = Number(amount);
+            data.advanceRequested = true;
+            data.advancePaid = false;
+        }
+        else if (type === 'final') {
+            data.finalAmount = Number(amount);
+            data.finalRequested = true;
+            data.finalPaid = false;
+        }
+        const project = await prisma.customProjectRequest.update({
+            where: { id },
+            data,
+            include: { user: { select: { name: true, email: true, phone: true } } }
+        });
+        res.json(project);
+    }
+    catch (error) {
+        console.error('Error requesting payment:', error);
+        res.status(500).json({ error: 'Failed to request payment' });
+    }
+});
+router.put('/custom-projects/:id/payment-amounts', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { advanceAmount, finalAmount } = req.body;
+        const project = await prisma.customProjectRequest.update({
+            where: { id },
+            data: {
+                ...(advanceAmount !== undefined && { advanceAmount: Number(advanceAmount) }),
+                ...(finalAmount !== undefined && { finalAmount: Number(finalAmount) }),
+            },
+            include: { user: { select: { name: true, email: true, phone: true } } }
+        });
+        res.json(project);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to update payment amounts' });
     }
 });
 export default router;

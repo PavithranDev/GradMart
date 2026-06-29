@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, protectedProcedure } from '../trpc';
+import { router, publicProcedure, protectedProcedure } from '../trpc.js';
 import bcrypt from 'bcryptjs';
 export const appRouter = router({
     hello: publicProcedure

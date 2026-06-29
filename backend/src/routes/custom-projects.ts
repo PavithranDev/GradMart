@@ -1,7 +1,7 @@
 import express from 'express';
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 import { getSession } from '@auth/express';
-import { authConfig } from '../index';
+import { authConfig } from '../index.js';
 
 const router = express.Router();
 

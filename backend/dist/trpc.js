@@ -1,6 +1,6 @@
 import { initTRPC } from '@trpc/server';
 import { getSession } from '@auth/express';
-import { prisma } from './db';
+import { prisma } from './db.js';
 // The context for each request
 export const createContext = async ({ req, res, }) => {
     // Try to get Auth.js session from request

@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getSession } from '@auth/express';
-import { authConfig } from '../index';
+import { authConfig } from '../index.js';
 import bcrypt from 'bcryptjs';
 
 const router = express.Router();

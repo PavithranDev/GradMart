@@ -1,7 +1,7 @@
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { getSession } from '@auth/express';
-import { prisma } from './db';
+import { prisma } from './db.js';
 
 // The context for each request
 export const createContext = async ({
