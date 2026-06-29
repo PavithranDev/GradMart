@@ -72,7 +72,7 @@ export function FeaturedProjects() {
                   <img 
                     src={project.thumbnail} 
                     alt={project.title} 
-                    className="w-full h-full object-cover mix-blend-overlay opacity-80" 
+                    className="w-full h-full object-cover opacity-90" 
                   />
                 )}
               </div>

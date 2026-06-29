@@ -76,20 +76,18 @@ export function FeaturedProjectHero() {
         {/* Left Side: Thumbnail */}
         <div 
           className="w-full md:w-1/2 h-[300px] md:h-[400px] rounded-2xl relative overflow-hidden flex-shrink-0 group-hover:shadow-2xl transition-all duration-500"
-          style={{ background: project.imageColor || "#6c3bff" }}
+          style={{ background: project.imageColor || "#e5e5e5" }}
         >
-           <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
-           {project.thumbnail && (
+           {project.thumbnail ? (
              <img 
                src={project.thumbnail} 
                alt={project.title} 
-               className="w-full h-full object-cover mix-blend-overlay opacity-80" 
+               className="absolute inset-0 w-full h-full object-cover" 
              />
-           )}
-           {/* Placeholder for project UI mockups */}
-           {!project.thumbnail && (
+           ) : (
              <div className="absolute inset-x-8 -bottom-10 top-12 bg-white rounded-t-xl shadow-2xl opacity-90 transition-transform duration-500 group-hover:-translate-y-2" />
            )}
+           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
         </div>
 
         {/* Right Side: Details */}
