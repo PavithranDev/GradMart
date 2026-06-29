@@ -21,7 +21,7 @@ export default async function CheckoutPage({
 
   let project = null;
   try {
-    const res = await fetch(`http://localhost:4000/api/projects/${projectId}`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/projects/${projectId}`, { cache: 'no-store' });
     if (res.ok) {
       project = await res.json();
     }

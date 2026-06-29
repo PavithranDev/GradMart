@@ -26,7 +26,7 @@ export default function CustomProjectsCRM() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/admin/custom-projects", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/custom-projects`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -51,7 +51,7 @@ export default function CustomProjectsCRM() {
     if (!activeProject) return;
     
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/status`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/custom-projects/${activeProject.id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -76,7 +76,7 @@ export default function CustomProjectsCRM() {
     if (!activeProject || !quoteAmount) return;
     
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/quote`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/custom-projects/${activeProject.id}/quote`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quotedBudget: quoteAmount }),
@@ -101,7 +101,7 @@ export default function CustomProjectsCRM() {
   const markPayment = async (type: "advance" | "final", amount: string) => {
     if (!activeProject || !amount) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/payment`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/custom-projects/${activeProject.id}/payment`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, amount: Number(amount), note: paymentNote }),
@@ -126,7 +126,7 @@ export default function CustomProjectsCRM() {
   const requestOnlinePayment = async (type: "advance" | "final", amount: string) => {
     if (!activeProject || !amount) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/custom-projects/${activeProject.id}/request-payment`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/custom-projects/${activeProject.id}/request-payment`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, amount: Number(amount) }),

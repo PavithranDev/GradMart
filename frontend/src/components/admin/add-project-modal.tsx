@@ -99,7 +99,7 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
         readmeUrl: formData.readmeUrl || null,
         livePreviewUrl: formData.livePreviewUrl || null,
       };
-      const res = await fetch(`http://localhost:4000/api/admin/project/${initialData.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${initialData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -149,8 +149,8 @@ export function AddProjectModal({ isOpen, onClose, initialData }: AddProjectModa
       };
 
       const url = initialData 
-        ? `http://localhost:4000/api/admin/project/${initialData.id}` 
-        : `http://localhost:4000/api/admin/project`;
+        ? `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${initialData.id}` 
+        : `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project`;
         
       const method = initialData ? "PUT" : "POST";
 

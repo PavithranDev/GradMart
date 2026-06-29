@@ -36,7 +36,7 @@ export default function CustomProjectsPage() {
   const [isAccepting, setIsAccepting] = useState<string | null>(null);
 
   const fetchProjects = () => {
-    fetch("http://localhost:4000/api/custom-projects", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/custom-projects`, {
       credentials: "include",
     })
       .then(res => res.json())
@@ -59,7 +59,7 @@ export default function CustomProjectsPage() {
   const acceptQuote = async (projectId: string) => {
     setIsAccepting(projectId);
     try {
-      const res = await fetch(`http://localhost:4000/api/custom-projects/${projectId}/accept-quote`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/custom-projects/${projectId}/accept-quote`, {
         method: 'PUT',
         credentials: 'include'
       });
@@ -80,7 +80,7 @@ export default function CustomProjectsPage() {
   const handleOnlinePayment = async (projectId: string, type: "advance" | "final") => {
     setIsAccepting(`${projectId}-${type}`);
     try {
-      const res = await fetch(`http://localhost:4000/api/custom-projects/${projectId}/pay-online`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/custom-projects/${projectId}/pay-online`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type }),

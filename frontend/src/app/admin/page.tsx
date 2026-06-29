@@ -37,7 +37,7 @@ export default function AdminAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/admin/stats", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/stats`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         if (!data.error) setStats(data);

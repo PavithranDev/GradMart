@@ -54,7 +54,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/user/profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/profile`, {
         credentials: "include",
       });
       if (res.ok) {
@@ -82,7 +82,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch("http://localhost:4000/api/user/profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,7 +113,7 @@ export default function ProfilePage() {
     }
     setPasswordSaving(true);
     try {
-      const res = await fetch("http://localhost:4000/api/user/password", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(passwords),

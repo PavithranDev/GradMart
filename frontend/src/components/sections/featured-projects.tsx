@@ -10,7 +10,7 @@ export function FeaturedProjects() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/projects")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/projects`)
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {

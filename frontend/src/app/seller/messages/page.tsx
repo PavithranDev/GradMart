@@ -12,7 +12,7 @@ export default function SellerMessagesPage() {
   const [isSending, setIsSending] = useState(false);
 
   const fetchConversations = () => {
-    fetch("http://localhost:4000/api/messages", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/messages`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setConversations(Array.isArray(data) ? data : []);
@@ -29,7 +29,7 @@ export default function SellerMessagesPage() {
   }, []);
 
   const loadFullConversation = (convId: string) => {
-    fetch(`http://localhost:4000/api/messages/${convId}`, { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/messages/${convId}`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setActiveChat(data);
@@ -47,7 +47,7 @@ export default function SellerMessagesPage() {
     setIsSending(true);
 
     try {
-      const res = await fetch(`http://localhost:4000/api/messages/${activeChat.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/messages/${activeChat.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: replyText }),

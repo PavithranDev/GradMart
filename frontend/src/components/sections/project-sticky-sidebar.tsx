@@ -18,7 +18,7 @@ export function ProjectStickySidebar({ project }: ProjectStickySidebarProps) {
 
   useEffect(() => {
     if (status === 'authenticated' && project?.id) {
-      fetch(`http://localhost:4000/api/purchases/check/${project.id}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/purchases/check/${project.id}`, {
         credentials: "include",
       })
       .then(res => res.json())

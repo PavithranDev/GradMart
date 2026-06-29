@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateSession = async () => {
     try {
       setStatus('loading');
-      const res = await fetch('http://localhost:4000/api/auth/session', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/session`, {
         headers: {
           'Content-Type': 'application/json',
         },

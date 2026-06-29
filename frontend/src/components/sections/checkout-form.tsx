@@ -25,7 +25,7 @@ export function CheckoutForm({ project }: { project: any }) {
     setIsProcessing(true);
 
     try {
-      const res = await fetch("http://localhost:4000/api/purchases", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/purchases`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

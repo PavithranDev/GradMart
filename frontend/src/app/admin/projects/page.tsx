@@ -20,7 +20,7 @@ export default function AdminProjectsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchProjects = () => {
-    fetch("http://localhost:4000/api/admin/projects", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/projects`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setProjects(Array.isArray(data) ? data : []);
@@ -39,7 +39,7 @@ export default function AdminProjectsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
     try {
-      await fetch(`http://localhost:4000/api/admin/project/${id}`, { method: 'DELETE' });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/admin/project/${id}`, { method: 'DELETE' });
       fetchProjects(); // refresh list
     } catch (err) {
       console.error(err);

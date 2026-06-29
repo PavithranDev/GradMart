@@ -38,13 +38,13 @@ function LoginForm() {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       // 1. Get CSRF Token
-      const csrfRes = await fetch("http://localhost:4000/api/auth/csrf", {
+      const csrfRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/auth/csrf`, {
         credentials: "include",
       });
       const { csrfToken } = await csrfRes.json();
 
       // 2. Perform Login
-      const res = await fetch("http://localhost:4000/api/auth/callback/credentials", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/auth/callback/credentials`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -76,7 +76,7 @@ function LoginForm() {
       // 3. Wait a tick for cookie to be set, then fetch role
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      const userRes = await fetch("http://localhost:4000/api/user/me", {
+      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/user/me`, {
         credentials: "include",
       });
 

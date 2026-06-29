@@ -19,7 +19,7 @@ export function SearchResults() {
       setLoading(true);
       try {
         const queryParams = new URLSearchParams(searchParams.toString());
-        const url = `http://localhost:4000/api/projects?${queryParams.toString()}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/projects?${queryParams.toString()}`;
         const res = await fetch(url);
         const data = await res.json();
         setProjects(data);

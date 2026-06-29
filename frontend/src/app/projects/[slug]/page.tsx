@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   try {
-    const res = await fetch(`http://localhost:4000/api/projects/${params.slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/projects/${params.slug}`, { next: { revalidate: 60 } });
     const project = await res.json();
     return {
       title: `${project.title || "Project"} | GradMart`,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function ProjectDetailsPage({ params }: { params: { slug: string } }) {
   let project = null;
   try {
-    const res = await fetch(`http://localhost:4000/api/projects/${params.slug}`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/projects/${params.slug}`, { cache: 'no-store' });
     if (!res.ok) {
       if (res.status === 404) notFound();
       throw new Error('Failed to fetch project');

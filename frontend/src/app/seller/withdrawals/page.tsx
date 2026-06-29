@@ -15,8 +15,8 @@ export default function WithdrawalsPage() {
   const fetchData = async () => {
     try {
       const [dashRes, wthRes] = await Promise.all([
-        fetch("http://localhost:4000/api/seller/dashboard", { credentials: "include" }),
-        fetch("http://localhost:4000/api/seller/withdrawals", { credentials: "include" })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/seller/dashboard`, { credentials: "include" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/seller/withdrawals`, { credentials: "include" })
       ]);
 
       if (dashRes.ok) {
@@ -58,7 +58,7 @@ export default function WithdrawalsPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("http://localhost:4000/api/seller/withdrawals", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/seller/withdrawals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: numAmount }),

@@ -26,7 +26,7 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/seller/dashboard", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}`}/api/seller/dashboard`, { credentials: "include" })
       .then(res => res.json())
       .then(d => {
         setData(d);
